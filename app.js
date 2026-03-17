@@ -130,20 +130,20 @@ function computeQuote(values) {
   }, 0);
 
   let alertLevel = 'neutral';
-  let alertLabel = 'Emissao neutra';
-  let alertText = 'Ainda sem referencia suficiente para classificar a emissao.';
+  let alertLabel = 'Emissão neutra';
+  let alertText = 'Ainda sem referência suficiente para classificar a emissão.';
 
   if (custoTotal > 0 && lucroPercentual >= 18 && economia > 0) {
     alertLevel = 'good';
-    alertLabel = 'Emissao boa';
-    alertText = 'Margem saudavel e oferta competitiva frente ao pagante.';
+    alertLabel = 'Emissão boa';
+    alertText = 'Margem saudável e oferta competitiva frente ao pagante.';
   } else if (custoTotal > 0 && lucroPercentual >= 10) {
     alertLevel = 'tight';
-    alertLabel = 'Emissao apertada';
-    alertText = 'A operacao fecha, mas vale revisar taxas, milheiro ou referencia.';
+    alertLabel = 'Emissão apertada';
+    alertText = 'A operação fecha, mas vale revisar taxas, milheiro ou referência.';
   } else if (custoTotal > 0) {
     alertLevel = 'bad';
-    alertLabel = 'Nao recomendada';
+    alertLabel = 'Não recomendada';
     alertText = 'Margem baixa ou inexistente. Melhor renegociar antes de ofertar.';
   }
 
@@ -191,7 +191,7 @@ function buildOfferText(values, computed, installments) {
 
   return (
     'AD2 Flights\n\n' +
-    'Cliente: ' + (values.cliente || 'Nao informado') + '\n' +
+    'Cliente: ' + (values.cliente || 'Não informado') + '\n' +
     'Companhias: ' + (companiesText || 'A definir') + '\n' +
     'Bagagem: ' + values.bagagem + '\n\n' +
     'Total no Pix: ' + formatBRL(computed.precoPix) + '\n' +
@@ -207,12 +207,12 @@ function buildOfferText(values, computed, installments) {
     '\n\n' +
     'Incluso:\n' +
     '- Taxas inclusas\n' +
-    '- Remarcacao c/ custo\n' +
-    '- Auxilio no check-in\n' +
+    '- Remarcação c/ custo\n' +
+    '- Auxílio no check-in\n' +
     '- ' +
     values.bagagem +
     '\n' +
-    '- Assistencia Juridica\n' +
+    '- Assistência Jurídica\n' +
     '- Sem reembolso'
   );
 }
@@ -335,10 +335,10 @@ function updateIncludedList(values) {
   const list = document.getElementById('includedList');
   const items = [
     'Taxas inclusas',
-    'Remarcacao c/ custo',
-    'Auxilio no check-in',
+    'Remarcação c/ custo',
+    'Auxílio no check-in',
     '01 ' + values.bagagem.toLowerCase() + ' por passageiro',
-    'Assistencia Juridica',
+    'Assistência Jurídica',
     'Sem reembolso'
   ];
 
@@ -360,7 +360,7 @@ function renderHistory(history) {
   if (!history.length) {
     const empty = document.createElement('p');
     empty.className = 'history-empty';
-    empty.textContent = 'Nenhuma cotacao salva ainda.';
+    empty.textContent = 'Nenhuma cotação salva ainda.';
     list.appendChild(empty);
     return;
   }
@@ -372,7 +372,7 @@ function renderHistory(history) {
       '<strong>' +
       entry.cliente +
       '</strong><span>' +
-      'Cotacao salva' +
+      'Cotação salva' +
       '</span><span>' +
       formatBRL(entry.precoPix) +
       ' | ' +
@@ -394,7 +394,7 @@ function updateUI() {
           })
         )
       ).join(', ')
-    : 'Companhia aerea a definir';
+    : 'Companhia aérea a definir';
   const statusCard = document.querySelector('.status-card');
 
   document.getElementById('metricCusto').textContent = formatBRL(computed.custoTotal);
@@ -627,7 +627,7 @@ function refreshHistory() {
   if (!isSupabaseConfigured()) {
     renderHistory(loadLocalHistory());
     setFeedback(
-      'Preencha SUPABASE_URL e SUPABASE_ANON_KEY no app.js para ativar o historico remoto.',
+      'Preencha SUPABASE_URL e SUPABASE_ANON_KEY no app.js para ativar o histórico remoto.',
       '--text-700'
     );
     return Promise.resolve();
@@ -640,7 +640,7 @@ function refreshHistory() {
     .catch(function () {
       renderHistory(loadLocalHistory());
       setFeedback(
-        'Nao consegui ler o Supabase agora. Mantive o historico local como fallback.',
+        'Não consegui ler o Supabase agora. Mantive o histórico local como fallback.',
         '--warning'
       );
     });
@@ -661,15 +661,15 @@ function handleCopyAndSave() {
     result.offerText
   );
   const localEntry = buildHistoryEntry(payload);
-  setFeedback('Copiando a arte da cotacao...', '--text-700');
+  setFeedback('Copiando a arte da cotação...', '--text-700');
 
   copyOfferCardToClipboard()
     .then(function () {
-      setFeedback('Imagem copiada. Salvando cotacao...', '--text-700');
+      setFeedback('Imagem copiada. Salvando cotação...', '--text-700');
       return persistQuote(payload, localEntry)
         .then(function (resultInfo) {
           if (resultInfo.mode === 'remote') {
-            setFeedback('Imagem copiada e cotacao salva no Supabase.', '--success');
+            setFeedback('Imagem copiada e cotação salva no Supabase.', '--success');
             return;
           }
 
@@ -680,7 +680,7 @@ function handleCopyAndSave() {
         })
         .catch(function () {
           setFeedback(
-            'Imagem copiada, mas o salvamento no Supabase falhou. Guardei no historico local.',
+            'Imagem copiada, mas o salvamento no Supabase falhou. Guardei no histórico local.',
             '--warning'
           );
         });
@@ -688,12 +688,12 @@ function handleCopyAndSave() {
     .catch(function () {
       return copyOfferText(result.offerText)
         .then(function () {
-          setFeedback('Nao consegui copiar a imagem. Copiei o texto e estou salvando...', '--warning');
+          setFeedback('Não consegui copiar a imagem. Copiei o texto e estou salvando...', '--warning');
 
           return persistQuote(payload, localEntry)
             .then(function (resultInfo) {
               if (resultInfo.mode === 'remote') {
-                setFeedback('Texto copiado e cotacao salva no Supabase.', '--warning');
+                setFeedback('Texto copiado e cotação salva no Supabase.', '--warning');
                 return;
               }
 
@@ -704,7 +704,7 @@ function handleCopyAndSave() {
             })
             .catch(function () {
               setFeedback(
-                'Texto copiado, mas o salvamento no Supabase falhou. Guardei no historico local.',
+                'Texto copiado, mas o salvamento no Supabase falhou. Guardei no histórico local.',
                 '--warning'
               );
             });
@@ -714,20 +714,20 @@ function handleCopyAndSave() {
             .then(function (resultInfo) {
               if (resultInfo.mode === 'remote') {
                 setFeedback(
-                  'Nao consegui copiar automaticamente, mas a cotacao foi salva no Supabase.',
+                  'Não consegui copiar automaticamente, mas a cotação foi salva no Supabase.',
                   '--warning'
                 );
                 return;
               }
 
               setFeedback(
-                'Nao consegui copiar automaticamente. A cotacao ficou salva so no historico local.',
+                'Não consegui copiar automaticamente. A cotação ficou salva só no histórico local.',
                 '--warning'
               );
             })
             .catch(function () {
               setFeedback(
-                'Falha ao copiar e ao salvar no Supabase. Mantive a cotacao no historico local.',
+                'Falha ao copiar e ao salvar no Supabase. Mantive a cotação no histórico local.',
                 '--danger'
               );
             });
@@ -798,8 +798,8 @@ document.addEventListener('DOMContentLoaded', function () {
   updateUI();
   setFeedback(
     isSupabaseConfigured()
-      ? 'Supabase configurado. O botao gera a arte da cotacao e tenta salvar no historico remoto.'
-      : 'Preencha SUPABASE_URL e SUPABASE_ANON_KEY no app.js para ativar o historico remoto.',
+      ? 'Supabase configurado. O botão gera a arte da cotação e tenta salvar no histórico remoto.'
+      : 'Preencha SUPABASE_URL e SUPABASE_ANON_KEY no app.js para ativar o histórico remoto.',
     '--text-700'
   );
 });

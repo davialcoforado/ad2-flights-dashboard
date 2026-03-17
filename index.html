@@ -2,7 +2,7 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <title>AD2 Flights - Calculadora de Emissao</title>
+    <title>AD2 Flights - Calculadora de Emissão</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -24,21 +24,21 @@
         <nav class="sidebar-nav">
           <button class="menu-item menu-item-active" type="button" id="newQuoteBtn">
             <span class="menu-icon">+</span>
-            <span>Nova Cotacao</span>
+            <span>Nova Cotação</span>
           </button>
           <button class="menu-item" type="button" id="historyBtn">
             <span class="menu-icon">H</span>
-            <span>Historico</span>
+            <span>Histórico</span>
           </button>
         </nav>
 
         <section class="history-panel" id="historyPanel">
           <div class="history-header">
-            <span>Historico recente</span>
+            <span>Histórico recente</span>
             <span class="history-count" id="historyCount">0</span>
           </div>
           <div class="history-list" id="historyList">
-            <p class="history-empty">Nenhuma cotacao salva ainda.</p>
+            <p class="history-empty">Nenhuma cotação salva ainda.</p>
           </div>
         </section>
 
@@ -47,7 +47,7 @@
 
       <main class="dashboard">
         <section class="workspace">
-          <div class="hero-bar">CALCULADORA DE EMISSAO</div>
+          <div class="hero-bar">CALCULADORA DE EMISSÃO</div>
 
           <form id="quoteForm" class="quote-layout">
             <section class="panel">
@@ -86,18 +86,18 @@
             </section>
 
             <section class="panel">
-              <div class="panel-title">CUSTOS DE EMISSAO</div>
+              <div class="panel-title">CUSTOS DE EMISSÃO</div>
               <div class="companies-list" id="companiesList"></div>
               <button class="secondary-action" type="button" id="addCompanyBtn">
-                ADICIONAR 2a COMPANHIA
+                ADICIONAR 2ª COMPANHIA
               </button>
             </section>
 
             <section class="panel panel-analysis">
-              <div class="panel-title">ANALISE DE LUCRO E MERCADO</div>
+              <div class="panel-title">ANÁLISE DE LUCRO E MERCADO</div>
               <div class="field-grid">
                 <label class="field field-span-2">
-                  <span>Preco de mercado total (referencia)</span>
+                  <span>Preço de mercado total (referência)</span>
                   <input
                     type="number"
                     name="valorPaganteRef"
@@ -109,7 +109,7 @@
                 </label>
 
                 <label class="field field-compact">
-                  <span>Comissao aplicada (%)</span>
+                  <span>Comissão aplicada (%)</span>
                   <input
                     type="number"
                     name="comissao"
@@ -121,8 +121,8 @@
                 </label>
 
                 <div class="status-card status-card-inline">
-                  <strong id="marketAlertLabel">Emissao neutra</strong>
-                  <small id="marketAlertText">Preencha os custos para avaliar a operacao.</small>
+                  <strong id="marketAlertLabel">Emissão neutra</strong>
+                  <small id="marketAlertText">Preencha os custos para avaliar a operação.</small>
                 </div>
               </div>
 
@@ -132,11 +132,11 @@
                   <strong id="metricCusto">R$ 0,00</strong>
                 </div>
                 <div class="analysis-metric">
-                  <span>Lucro liquido</span>
+                  <span>Lucro líquido</span>
                   <strong id="metricLucro">R$ 0,00 (0,00%)</strong>
                 </div>
                 <div class="analysis-metric">
-                  <span>Preco final sugerido</span>
+                  <span>Preço final sugerido</span>
                   <strong id="metricPrecoFinal">R$ 0,00</strong>
                 </div>
                 <div class="analysis-metric">
@@ -149,7 +149,7 @@
 
           <div class="workspace-footer">
             <div class="workspace-feedback" id="actionFeedback">
-              Cotacao pronta. Preencha as credenciais do Supabase no app.js para ativar o historico remoto.
+              Cotação pronta. Preencha as credenciais do Supabase no app.js para ativar o histórico remoto.
             </div>
             <button class="primary-action" type="button" id="copySaveBtn">
               COPIAR IMAGEM E SALVAR
@@ -163,29 +163,29 @@
               <img class="summary-logo summary-logo-image" src="assets/ad2-mark.svg" alt="AD2 Flights" />
               <div>
                 <div class="summary-company">AD2 Flights</div>
-                <div class="summary-airline" id="summaryAirline">Companhia aerea a definir</div>
+                <div class="summary-airline" id="summaryAirline">Companhia aérea a definir</div>
               </div>
             </div>
 
             <div class="summary-price-block">
               <span class="summary-caption">TOTAL A VISTA (PIX)</span>
               <strong id="summaryPix">R$ 0,00</strong>
-              <small>Valores sujeitos a alteracao sem aviso previo</small>
+              <small>Valores sujeitos a alteração sem aviso prévio</small>
             </div>
 
             <section class="summary-section">
-              <h2>PARCELAMENTO NO CARTAO</h2>
+              <h2>PARCELAMENTO NO CARTÃO</h2>
               <div class="installments-table" id="installmentsTable"></div>
             </section>
 
             <section class="summary-section">
-              <h2>O QUE ESTA INCLUSO</h2>
+              <h2>O QUE ESTÁ INCLUSO</h2>
               <ul class="included-list" id="includedList">
                 <li>Taxas inclusas</li>
-                <li>Remarcacao c/ custo</li>
-                <li>Auxilio no check-in</li>
+                <li>Remarcação c/ custo</li>
+                <li>Auxílio no check-in</li>
                 <li>01 bagagem de 10kg por passageiro</li>
-                <li>Assistencia Juridica</li>
+                <li>Assistência Jurídica</li>
                 <li>Sem reembolso</li>
               </ul>
             </section>
