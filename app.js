@@ -442,7 +442,8 @@ function buildHistoryEntry(payload) {
     cliente: payload.cliente,
     route: payload.origem + ' - ' + payload.destino,
     precoPix: payload.precoPix,
-    savedAt: payload.savedAt || new Date().toLocaleString('pt-BR')
+    savedAt: payload.savedAt || new Date().toLocaleString('pt-BR'),
+    payload: payload
   };
 }
 
@@ -502,7 +503,30 @@ function fromSupabaseRow(row) {
     cliente: row.cliente || 'Sem cliente',
     route: (row.origem || '-') + ' - ' + (row.destino || '-'),
     precoPix: parseNumber(row.preco_pix),
-    savedAt: row.saved_at || ''
+    savedAt: row.saved_at || '',
+    payload: {
+      id: row.id || '',
+      savedAt: row.saved_at || '',
+      cliente: row.cliente || '',
+      origem: row.origem || '',
+      destino: row.destino || '',
+      ida: row.ida || '',
+      volta: row.volta || '',
+      bagagem: row.bagagem || 'Mochila + 10kg',
+      parcelamentoSemJuros: row.parcelamento_sem_juros || 'pix',
+      valorPaganteRef: parseNumber(row.valor_pagante_ref),
+      comissao: parseNumber(row.comissao),
+      companies: Array.isArray(row.companies) ? row.companies : [],
+      milhasTotais: parseNumber(row.milhas_totais),
+      custoTotal: parseNumber(row.custo_total),
+      precoPix: parseNumber(row.preco_pix),
+      lucro: parseNumber(row.lucro),
+      lucroPercentual: parseNumber(row.lucro_percentual),
+      economia: parseNumber(row.economia),
+      economiaPercentual: parseNumber(row.economia_percentual),
+      installments: Array.isArray(row.installments) ? row.installments : [],
+      offerText: row.offer_text || ''
+    }
   };
 }
 
@@ -588,7 +612,7 @@ function renderHistory(history) {
     const item = document.createElement('div');
     item.className = 'history-item';
     item.innerHTML =
-      '<strong>' +
+      '<div class="history-item-content"><strong>' +
       entry.cliente +
       '</strong><span>' +
       'Cotação salva' +
@@ -596,9 +620,104 @@ function renderHistory(history) {
       formatBRL(entry.precoPix) +
       ' | ' +
       entry.savedAt +
-      '</span>';
+      '</span></div><button class="history-delete" type="button" title="Excluir">×</button>';
+
+    item.querySelector('.history-item-content').addEventListener('click', function () {
+      if (entry.payload) {
+        loadQuoteIntoForm(entry.payload);
+      }
+    });
+
+    item.querySelector('.history-delete').addEventListener('click', function (event) {
+      event.stopPropagation();
+      deleteHistoryEntry(entry);
+    });
+
     list.appendChild(item);
   });
+}
+
+function loadQuoteIntoForm(payload) {
+  document.getElementById('cliente').value = payload.cliente || '';
+  document.getElementById('parcelamentoSemJuros').value = payload.parcelamentoSemJuros || 'pix';
+  document.getElementById('bagagem').value = payload.bagagem || 'Mochila + 10kg';
+  document.getElementById('valorPaganteRef').value = payload.valorPaganteRef || 0;
+  document.getElementById('comissao').value = payload.comissao || 18;
+
+  const list = document.getElementById('companiesList');
+  list.innerHTML = '';
+
+  (payload.companies || []).forEach(function (company) {
+    addCompany({
+      cia: company.cia || 'AZUL',
+      modalidade: company.modalidade || 'milhas',
+      milhas: company.milhas || 0,
+      milheiro: company.milheiro || 0,
+      taxas: company.taxas || 0,
+      valorDinheiro: company.valorDinheiro || 0,
+      taxaResgate: company.taxaResgate || 0,
+      cartaoTavi: Boolean(company.cartaoTavi)
+    });
+  });
+
+  if (!getCompanyRows().length) {
+    addCompany({
+      cia: 'AZUL',
+      modalidade: 'milhas',
+      milhas: 100000,
+      milheiro: 15.5,
+      taxas: 100,
+      valorDinheiro: 0,
+      taxaResgate: 0,
+      cartaoTavi: false
+    });
+  }
+
+  setActiveView('quote');
+  updateUI();
+  setFeedback('Cotação carregada a partir do histórico.', '--success');
+}
+
+function removeLocalHistoryEntry(id, savedAt) {
+  const filtered = loadLocalHistory().filter(function (entry) {
+    if (id) return entry.id !== id;
+    return entry.savedAt !== savedAt;
+  });
+  localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(filtered));
+}
+
+function deleteRemoteQuote(id) {
+  return fetch(getSupabaseEndpoint({ id: 'eq.' + id }), {
+    method: 'DELETE',
+    headers: getSupabaseHeaders()
+  }).then(function (response) {
+    if (!response.ok) throw new Error('delete_failed');
+  });
+}
+
+function deleteHistoryEntry(entry) {
+  if (!entry) return;
+
+  if (entry.id && isSupabaseConfigured()) {
+    deleteRemoteQuote(entry.id)
+      .then(function () {
+        removeLocalHistoryEntry(entry.id, entry.savedAt);
+        return refreshHistory();
+      })
+      .then(function () {
+        setFeedback('Cotação excluída do histórico.', '--success');
+      })
+      .catch(function () {
+        removeLocalHistoryEntry(entry.id, entry.savedAt);
+        renderHistory(loadLocalHistory());
+        setFeedback('Não consegui excluir no Supabase. Removi do histórico local.', '--warning');
+      });
+    return;
+  }
+
+  removeLocalHistoryEntry(entry.id, entry.savedAt);
+  renderHistory(loadLocalHistory());
+  setFeedback('Cotação excluída do histórico local.', '--success');
 }
 
 function updateUI() {
@@ -779,7 +898,8 @@ function copyOfferText(text) {
 function fetchRemoteHistory() {
   return fetch(
     getSupabaseEndpoint({
-      select: 'id,cliente,origem,destino,preco_pix,saved_at',
+      select:
+        'id,cliente,origem,destino,bagagem,parcelamento_sem_juros,valor_pagante_ref,comissao,milhas_totais,custo_total,preco_pix,lucro,lucro_percentual,economia,economia_percentual,companies,installments,offer_text,saved_at,ida,volta',
       order: 'created_at.desc',
       limit: String(MAX_HISTORY_ITEMS)
     }),

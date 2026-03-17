@@ -40,3 +40,10 @@ on public.quotes
 for insert
 to anon
 with check (true);
+
+drop policy if exists "public can delete quotes" on public.quotes;
+create policy "public can delete quotes"
+on public.quotes
+for delete
+to anon
+using (true);

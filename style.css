@@ -2,8 +2,8 @@
   --navy-950: #0f1b4c;
   --navy-900: #14295f;
   --navy-800: #1d4ea3;
-  --mint-500: #12d4a0;
-  --mint-600: #0fc08f;
+  --mint-500: #1f6fe5;
+  --mint-600: #174ea8;
   --sky-100: #eef4ff;
   --sky-200: #d9e7ff;
   --sky-300: #c8dcff;
@@ -175,6 +175,16 @@ select {
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.history-item-content {
+  flex: 1;
+  min-width: 0;
 }
 
 .history-item strong,
@@ -190,6 +200,18 @@ select {
   font-size: 12px;
   opacity: 0.75;
   margin-top: 4px;
+}
+
+.history-delete {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ff9aaa;
+  cursor: pointer;
+  font-weight: 800;
 }
 
 .history-empty {
@@ -543,7 +565,7 @@ select {
   padding: 0 24px;
   background: linear-gradient(135deg, var(--mint-500) 0%, var(--mint-600) 100%);
   color: #fff;
-  box-shadow: 0 18px 34px rgba(18, 212, 160, 0.28);
+  box-shadow: 0 18px 34px rgba(31, 111, 229, 0.28);
 }
 
 .summary-card {
@@ -627,7 +649,7 @@ select {
 
 .summary-section h2 {
   margin: 0 0 14px;
-  color: var(--mint-600);
+  color: var(--navy-800);
   font-size: 16px;
   font-weight: 800;
 }
