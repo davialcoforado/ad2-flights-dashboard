@@ -260,22 +260,7 @@ function buildPayload(values, computed, installments, offerText) {
 }
 
 function updateInstallmentsUI(installments) {
-  const table = document.getElementById('installmentsTable');
-  table.innerHTML = '';
-
-  installments.forEach(function (installment) {
-    const item = document.createElement('div');
-    item.className = 'installment-item';
-    item.innerHTML =
-      '<span>' +
-      installment.times +
-      'x</span><strong>' +
-      formatBRL(installment.perInstallment) +
-      '</strong><small>(' +
-      installment.suffix +
-      ')</small>';
-    table.appendChild(item);
-  });
+  return installments;
 }
 
 function updateIncludedList(values) {
@@ -335,6 +320,20 @@ function updateUI() {
   const installments = buildInstallments(computed.precoPix, values.parcelamentoSemJuros);
   const routeText =
     values.origem && values.destino ? values.origem + ' - ' + values.destino : 'Origem - Destino';
+  const dateText = values.volta
+    ? 'Ida ' + formatDate(values.ida) + ' | Volta ' + formatDate(values.volta)
+    : values.ida
+      ? 'Ida ' + formatDate(values.ida)
+      : 'Datas a confirmar';
+  const airlineText = computed.companies.length
+    ? Array.from(
+        new Set(
+          computed.companies.map(function (company) {
+            return company.cia;
+          })
+        )
+      ).join(', ')
+    : 'Companhia aerea a definir';
   const statusCard = document.querySelector('.status-card');
 
   document.getElementById('metricCusto').textContent = formatBRL(computed.custoTotal);
@@ -352,13 +351,8 @@ function updateUI() {
 
   document.getElementById('summaryPix').textContent = formatBRL(computed.precoPix);
   document.getElementById('summaryRoute').textContent = routeText;
-
-  document.getElementById('internalCompanies').textContent =
-    computed.companies.length + (computed.companies.length === 1 ? ' cia' : ' cias');
-  document.getElementById('internalMiles').textContent =
-    computed.milhasTotais.toLocaleString('pt-BR') + ' milhas';
-  document.getElementById('internalCost').textContent = formatBRL(computed.custoTotal);
-  document.getElementById('internalProfit').textContent = formatBRL(computed.lucro);
+  document.getElementById('summaryDates').textContent = dateText;
+  document.getElementById('summaryAirline').textContent = airlineText;
 
   updateInstallmentsUI(installments);
   updateIncludedList(values);
@@ -636,6 +630,7 @@ document.addEventListener('DOMContentLoaded', function () {
   bindStaticEvents();
   refreshHistory();
   updateUI();
+  document.getElementById('analysisPanel').open = false;
   setFeedback(
     WEB_APP_URL
       ? 'Apps Script configurado. Salvamento e historico da planilha ativos.'

@@ -115,61 +115,71 @@
               </button>
             </section>
 
-            <section class="panel panel-analysis">
-              <div class="panel-title">ANALISE DE LUCRO E MERCADO</div>
-              <div class="field-grid">
-                <label class="field field-span-2">
-                  <span>Preco de mercado total (referencia)</span>
-                  <input
-                    type="number"
-                    name="valorPaganteRef"
-                    id="valorPaganteRef"
-                    min="0"
-                    step="0.01"
-                    placeholder="0,00"
-                  />
-                </label>
-
-                <label class="field">
-                  <span>Comissao aplicada (%)</span>
-                  <input
-                    type="number"
-                    name="comissao"
-                    id="comissao"
-                    min="0"
-                    step="0.1"
-                    value="18"
-                  />
-                </label>
-
-                <label class="field">
-                  <span>Status da emissao</span>
-                  <div class="status-card">
-                    <strong id="marketAlertLabel">Emissao neutra</strong>
-                    <small id="marketAlertText">Preencha os custos para avaliar a operacao.</small>
+            <details class="panel panel-analysis panel-collapsible" id="analysisPanel">
+              <summary class="analysis-summary">
+                <div>
+                  <div class="panel-title panel-title-inline">ANALISE INTERNA</div>
+                  <p class="analysis-subtitle">Logica comercial simplificada para a tela principal.</p>
+                </div>
+                <div class="analysis-summary-metrics">
+                  <div class="analysis-pill">
+                    <span>Final</span>
+                    <strong id="metricPrecoFinal">R$ 0,00</strong>
                   </div>
-                </label>
-              </div>
+                  <div class="analysis-pill">
+                    <span>Lucro</span>
+                    <strong id="metricLucro">R$ 0,00 (0,00%)</strong>
+                  </div>
+                </div>
+              </summary>
 
-              <div class="analysis-metrics">
-                <div class="analysis-metric">
-                  <span>Custo total</span>
-                  <strong id="metricCusto">R$ 0,00</strong>
+              <div class="analysis-content">
+                <div class="field-grid">
+                  <label class="field field-span-2">
+                    <span>Preco de mercado total (referencia)</span>
+                    <input
+                      type="number"
+                      name="valorPaganteRef"
+                      id="valorPaganteRef"
+                      min="0"
+                      step="0.01"
+                      placeholder="0,00"
+                    />
+                  </label>
+
+                  <label class="field">
+                    <span>Comissao aplicada (%)</span>
+                    <input
+                      type="number"
+                      name="comissao"
+                      id="comissao"
+                      min="0"
+                      step="0.1"
+                      value="18"
+                    />
+                  </label>
+
+                  <div class="field field-status">
+                    <span>Status da emissao</span>
+                    <div class="status-card">
+                      <strong id="marketAlertLabel">Emissao neutra</strong>
+                      <small id="marketAlertText">Preencha os custos para avaliar a operacao.</small>
+                    </div>
+                  </div>
                 </div>
-                <div class="analysis-metric">
-                  <span>Lucro liquido</span>
-                  <strong id="metricLucro">R$ 0,00 (0,00%)</strong>
-                </div>
-                <div class="analysis-metric">
-                  <span>Preco final sugerido</span>
-                  <strong id="metricPrecoFinal">R$ 0,00</strong>
-                </div>
-                <div class="analysis-metric">
-                  <span>Economia vs pagante</span>
-                  <strong id="metricEconomia">R$ 0,00</strong>
+
+                <div class="analysis-mini-grid">
+                  <div class="analysis-mini-item">
+                    <span>Custo total</span>
+                    <strong id="metricCusto">R$ 0,00</strong>
+                  </div>
+                  <div class="analysis-mini-item">
+                    <span>Economia vs pagante</span>
+                    <strong id="metricEconomia">R$ 0,00</strong>
+                  </div>
                 </div>
               </div>
-            </section>
+            </details>
           </form>
 
           <div class="workspace-footer">
@@ -188,6 +198,8 @@
             <div>
               <div class="summary-company">AD2 Passagens Aereas</div>
               <div class="summary-route" id="summaryRoute">Origem - Destino</div>
+              <div class="summary-dates" id="summaryDates">Datas a confirmar</div>
+              <div class="summary-airline" id="summaryAirline">Companhia aerea a definir</div>
             </div>
           </div>
 
@@ -196,11 +208,6 @@
             <strong id="summaryPix">R$ 0,00</strong>
             <small>Valores sujeitos a alteracao sem aviso previo</small>
           </div>
-
-          <section class="summary-section">
-            <h2>PARCELAMENTO NO CARTAO</h2>
-            <div class="installments-table" id="installmentsTable"></div>
-          </section>
 
           <section class="summary-section">
             <h2>O QUE ESTA INCLUSO</h2>
@@ -212,28 +219,6 @@
               <li>Assistencia Juridica</li>
               <li>Sem reembolso</li>
             </ul>
-          </section>
-
-          <section class="summary-section summary-hidden-costs">
-            <h2>CAMADA INTERNA AD2</h2>
-            <div class="internal-grid">
-              <div>
-                <span>Cias</span>
-                <strong id="internalCompanies">1 cia</strong>
-              </div>
-              <div>
-                <span>Milhas totais</span>
-                <strong id="internalMiles">0</strong>
-              </div>
-              <div>
-                <span>Custo interno</span>
-                <strong id="internalCost">R$ 0,00</strong>
-              </div>
-              <div>
-                <span>Lucro AD2</span>
-                <strong id="internalProfit">R$ 0,00</strong>
-              </div>
-            </div>
           </section>
 
           <footer class="summary-footer">
