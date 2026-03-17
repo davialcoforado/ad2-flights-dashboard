@@ -28,6 +28,10 @@
             <span class="menu-icon">H</span>
             <span>Histórico</span>
           </button>
+          <button class="menu-item" type="button" id="settingsBtn">
+            <span class="menu-icon">C</span>
+            <span>Configurações</span>
+          </button>
         </nav>
 
         <section class="history-panel" id="historyPanel">
@@ -47,115 +51,145 @@
         <section class="workspace">
           <div class="hero-bar">CALCULADORA DE EMISSÃO</div>
 
-          <form id="quoteForm" class="quote-layout">
-            <section class="panel">
-              <div class="panel-title">DADOS DA OFERTA</div>
-              <div class="field-grid field-grid-offer">
-                <label class="field">
-                  <span>Cliente</span>
-                  <input
-                    type="text"
-                    name="cliente"
-                    id="cliente"
-                    placeholder="Nome do cliente"
-                    value="Luana"
-                  />
-                </label>
+          <div id="quoteView">
+            <form id="quoteForm" class="quote-layout">
+              <section class="panel">
+                <div class="panel-title">DADOS DA OFERTA</div>
+                <div class="field-grid field-grid-offer">
+                  <label class="field">
+                    <span>Cliente</span>
+                    <input
+                      type="text"
+                      name="cliente"
+                      id="cliente"
+                      placeholder="Nome do cliente"
+                      value="Luana"
+                    />
+                  </label>
 
-                <label class="field">
-                  <span>Parcelamento s/ juros</span>
-                  <select name="parcelamentoSemJuros" id="parcelamentoSemJuros">
-                    <option value="pix">Apenas Pix</option>
-                    <option value="1">1x sem juros</option>
-                    <option value="2">2x sem juros</option>
-                    <option value="3">3x sem juros</option>
-                  </select>
-                </label>
+                  <label class="field">
+                    <span>Parcelamento s/ juros</span>
+                    <select name="parcelamentoSemJuros" id="parcelamentoSemJuros">
+                      <option value="pix">Apenas Pix</option>
+                      <option value="1">1x sem juros</option>
+                      <option value="2">2x sem juros</option>
+                      <option value="3">3x sem juros</option>
+                    </select>
+                  </label>
 
-                <label class="field">
-                  <span>Bagagem</span>
-                  <select name="bagagem" id="bagagem">
-                    <option value="Mochila + 10kg">Mochila + 10kg</option>
-                    <option value="Mochila + bagagem despachada">Mochila + bagagem despachada</option>
-                    <option value="Somente mochila">Somente mochila</option>
-                  </select>
-                </label>
+                  <label class="field">
+                    <span>Bagagem</span>
+                    <select name="bagagem" id="bagagem">
+                      <option value="Mochila + 10kg">Mochila + 10kg</option>
+                      <option value="Mochila + bagagem despachada">Mochila + bagagem despachada</option>
+                      <option value="Somente mochila">Somente mochila</option>
+                    </select>
+                  </label>
+                </div>
+              </section>
+
+              <section class="panel">
+                <div class="panel-title">CUSTOS DE EMISSÃO</div>
+                <div class="companies-list" id="companiesList"></div>
+                <button class="secondary-action" type="button" id="addCompanyBtn">
+                  ADICIONAR 2ª COMPANHIA
+                </button>
+              </section>
+
+              <section class="panel panel-analysis">
+                <div class="panel-title">ANÁLISE DE LUCRO E MERCADO</div>
+                <div class="field-grid">
+                  <label class="field field-span-2">
+                    <span>Preço de mercado total (referência)</span>
+                    <input
+                      type="number"
+                      name="valorPaganteRef"
+                      id="valorPaganteRef"
+                      min="0"
+                      step="0.01"
+                      placeholder="0,00"
+                    />
+                  </label>
+
+                  <label class="field field-compact">
+                    <span>Comissão aplicada (%)</span>
+                    <input
+                      type="number"
+                      name="comissao"
+                      id="comissao"
+                      min="0"
+                      step="0.1"
+                      value="18"
+                    />
+                  </label>
+
+                  <div class="status-card status-card-inline">
+                    <strong id="marketAlertLabel">Emissão neutra</strong>
+                    <small id="marketAlertText">Preencha os custos para avaliar a operação.</small>
+                  </div>
+                </div>
+
+                <div class="analysis-metrics">
+                  <div class="analysis-metric">
+                    <span>Custo total</span>
+                    <strong id="metricCusto">R$ 0,00</strong>
+                  </div>
+                  <div class="analysis-metric">
+                    <span>Lucro líquido</span>
+                    <strong id="metricLucro">R$ 0,00 (0,00%)</strong>
+                  </div>
+                  <div class="analysis-metric">
+                    <span>Preço final sugerido</span>
+                    <strong id="metricPrecoFinal">R$ 0,00</strong>
+                  </div>
+                  <div class="analysis-metric">
+                    <span>Economia vs pagante</span>
+                    <strong id="metricEconomia">R$ 0,00</strong>
+                  </div>
+                </div>
+              </section>
+            </form>
+
+            <div class="workspace-footer">
+              <div class="workspace-feedback" id="actionFeedback">
+                Cotação pronta. Preencha as credenciais do Supabase no app.js para ativar o histórico remoto.
               </div>
-            </section>
-
-            <section class="panel">
-              <div class="panel-title">CUSTOS DE EMISSÃO</div>
-              <div class="companies-list" id="companiesList"></div>
-              <button class="secondary-action" type="button" id="addCompanyBtn">
-                ADICIONAR 2ª COMPANHIA
+              <button class="primary-action" type="button" id="copySaveBtn">
+                COPIAR IMAGEM E SALVAR
               </button>
-            </section>
-
-            <section class="panel panel-analysis">
-              <div class="panel-title">ANÁLISE DE LUCRO E MERCADO</div>
-              <div class="field-grid">
-                <label class="field field-span-2">
-                  <span>Preço de mercado total (referência)</span>
-                  <input
-                    type="number"
-                    name="valorPaganteRef"
-                    id="valorPaganteRef"
-                    min="0"
-                    step="0.01"
-                    placeholder="0,00"
-                  />
-                </label>
-
-                <label class="field field-compact">
-                  <span>Comissão aplicada (%)</span>
-                  <input
-                    type="number"
-                    name="comissao"
-                    id="comissao"
-                    min="0"
-                    step="0.1"
-                    value="18"
-                  />
-                </label>
-
-                <div class="status-card status-card-inline">
-                  <strong id="marketAlertLabel">Emissão neutra</strong>
-                  <small id="marketAlertText">Preencha os custos para avaliar a operação.</small>
-                </div>
-              </div>
-
-              <div class="analysis-metrics">
-                <div class="analysis-metric">
-                  <span>Custo total</span>
-                  <strong id="metricCusto">R$ 0,00</strong>
-                </div>
-                <div class="analysis-metric">
-                  <span>Lucro líquido</span>
-                  <strong id="metricLucro">R$ 0,00 (0,00%)</strong>
-                </div>
-                <div class="analysis-metric">
-                  <span>Preço final sugerido</span>
-                  <strong id="metricPrecoFinal">R$ 0,00</strong>
-                </div>
-                <div class="analysis-metric">
-                  <span>Economia vs pagante</span>
-                  <strong id="metricEconomia">R$ 0,00</strong>
-                </div>
-              </div>
-            </section>
-          </form>
-
-          <div class="workspace-footer">
-            <div class="workspace-feedback" id="actionFeedback">
-              Cotação pronta. Preencha as credenciais do Supabase no app.js para ativar o histórico remoto.
             </div>
-            <button class="primary-action" type="button" id="copySaveBtn">
-              COPIAR IMAGEM E SALVAR
-            </button>
           </div>
+
+          <section class="panel is-hidden" id="settingsView">
+            <div class="panel-title">CONFIGURAÇÕES INTERNAS</div>
+            <div class="field-grid settings-grid">
+              <label class="field field-compact">
+                <span>Taxa Mercado Pago (%)</span>
+                <input type="number" id="settingsMercadoPago" min="0" step="0.01" value="0" />
+              </label>
+              <label class="field field-compact">
+                <span>Taxas extras (R$)</span>
+                <input type="number" id="settingsTaxaExtra" min="0" step="0.01" value="0" />
+              </label>
+            </div>
+
+            <div class="settings-divider"></div>
+
+            <div class="panel-title panel-title-inline">COMPANHIAS E MILHEIRO PADRÃO</div>
+            <div class="settings-companies-list" id="settingsCompaniesList"></div>
+
+            <div class="settings-actions">
+              <button class="secondary-action" type="button" id="addSettingsCompanyBtn">
+                ADICIONAR COMPANHIA
+              </button>
+              <button class="primary-action primary-action-settings" type="button" id="saveSettingsBtn">
+                SALVAR CONFIGURAÇÕES
+              </button>
+            </div>
+          </section>
         </section>
 
-        <aside class="summary-card">
+        <aside class="summary-card" id="summaryCard">
           <div class="summary-card-export" id="quoteCard">
             <div class="summary-header">
               <img class="summary-logo summary-logo-image" src="assets/ad2-logo.png" alt="AD2" />
@@ -210,6 +244,13 @@
             </select>
           </label>
           <label class="field">
+            <span>Modalidade</span>
+            <select name="modalidade[]">
+              <option value="milhas">Pontos</option>
+              <option value="pontos_dinheiro">Pontos + Dinheiro</option>
+            </select>
+          </label>
+          <label class="field">
             <span>Milhas</span>
             <input type="number" name="milhas[]" min="0" step="1" value="100000" />
           </label>
@@ -220,6 +261,21 @@
           <label class="field">
             <span>Taxas</span>
             <input type="number" name="taxas[]" min="0" step="0.01" value="100" />
+          </label>
+          <label class="field company-extra-field" data-extra="valor-dinheiro">
+            <span>Valor em dinheiro (sem taxas)</span>
+            <input type="number" name="valorDinheiro[]" min="0" step="0.01" value="0" />
+          </label>
+          <label class="field company-extra-field" data-extra="taxa-resgate">
+            <span>Taxa de resgate</span>
+            <input type="number" name="taxaResgate[]" min="0" step="0.01" value="0" />
+          </label>
+          <label class="field checkbox-field company-extra-field" data-extra="tavi">
+            <span>Cartão TAVI</span>
+            <span class="check-pill">
+              <input type="checkbox" name="cartaoTavi[]" />
+              <span>Aplicar 10% no valor em dinheiro</span>
+            </span>
           </label>
         </div>
       </div>

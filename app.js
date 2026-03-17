@@ -1,4 +1,5 @@
 const HISTORY_STORAGE_KEY = 'ad2-flights-history';
+const SETTINGS_STORAGE_KEY = 'ad2-flights-settings';
 const MAX_HISTORY_ITEMS = 6;
 const SUPABASE_URL = 'https://vzupqsmahouhhrqofgyh.supabase.co';
 const SUPABASE_ANON_KEY =
@@ -19,6 +20,20 @@ const INSTALLMENT_RATES = {
   11: 0.151,
   12: 0.163
 };
+
+const DEFAULT_SETTINGS = {
+  taxaMercadoPago: 0,
+  taxaExtra: 0,
+  companies: [
+    { name: 'AZUL', milheiro: 15.5 },
+    { name: 'LATAM', milheiro: 16.2 },
+    { name: 'GOL', milheiro: 15 },
+    { name: 'TAP', milheiro: 18 },
+    { name: 'AMERICAN', milheiro: 20 }
+  ]
+};
+
+let appSettings = loadSettings();
 
 function formatBRL(value) {
   if (isNaN(value) || !isFinite(value)) return 'R$ 0,00';
@@ -46,6 +61,178 @@ function parseNumber(value) {
   return isNaN(parsed) ? 0 : parsed;
 }
 
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : {};
+    return {
+      taxaMercadoPago: parseNumber(parsed.taxaMercadoPago || DEFAULT_SETTINGS.taxaMercadoPago),
+      taxaExtra: parseNumber(parsed.taxaExtra || DEFAULT_SETTINGS.taxaExtra),
+      companies:
+        Array.isArray(parsed.companies) && parsed.companies.length
+          ? parsed.companies.map(function (company) {
+              return {
+                name: String(company.name || '').trim().toUpperCase(),
+                milheiro: parseNumber(company.milheiro)
+              };
+            })
+          : DEFAULT_SETTINGS.companies.slice()
+    };
+  } catch (error) {
+    return {
+      taxaMercadoPago: DEFAULT_SETTINGS.taxaMercadoPago,
+      taxaExtra: DEFAULT_SETTINGS.taxaExtra,
+      companies: DEFAULT_SETTINGS.companies.slice()
+    };
+  }
+}
+
+function persistSettings(settings) {
+  localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+}
+
+function getCompanyOptions() {
+  return (appSettings.companies || []).filter(function (company) {
+    return company.name;
+  });
+}
+
+function findCompanySetting(name) {
+  return getCompanyOptions().find(function (company) {
+    return company.name === name;
+  });
+}
+
+function populateCompanySelect(select, selectedValue) {
+  const options = getCompanyOptions();
+  select.innerHTML = '';
+
+  options.forEach(function (company) {
+    const option = document.createElement('option');
+    option.value = company.name;
+    option.textContent = company.name;
+    select.appendChild(option);
+  });
+
+  if (selectedValue && options.some(function (company) { return company.name === selectedValue; })) {
+    select.value = selectedValue;
+  } else if (options.length) {
+    select.value = options[0].name;
+  }
+}
+
+function applyDefaultMilheiro(row) {
+  const companyName = row.querySelector('select[name="cia[]"]').value;
+  const milheiroInput = row.querySelector('input[name="milheiro[]"]');
+  const companySetting = findCompanySetting(companyName);
+
+  if (companySetting) {
+    milheiroInput.value = companySetting.milheiro;
+  }
+}
+
+function syncCompanyRowMode(row) {
+  const ciaSelect = row.querySelector('select[name="cia[]"]');
+  const modalidadeSelect = row.querySelector('select[name="modalidade[]"]');
+  const pointsMoneyOption = modalidadeSelect.querySelector('option[value="pontos_dinheiro"]');
+  const isAzul = ciaSelect.value === 'AZUL';
+  const isPointsMoney = modalidadeSelect.value === 'pontos_dinheiro';
+
+  pointsMoneyOption.disabled = !isAzul;
+
+  if (!isAzul && isPointsMoney) {
+    modalidadeSelect.value = 'milhas';
+  }
+
+  row.querySelectorAll('.company-extra-field').forEach(function (field) {
+    field.hidden = !(isAzul && modalidadeSelect.value === 'pontos_dinheiro');
+  });
+}
+
+function createSettingsCompanyRow(company) {
+  const row = document.createElement('div');
+  row.className = 'settings-company-row';
+  row.innerHTML =
+    '<label class="field">' +
+    '<span>Companhia</span>' +
+    '<input type="text" class="settings-company-name" value="' +
+    (company.name || '') +
+    '" />' +
+    '</label>' +
+    '<label class="field field-compact">' +
+    '<span>Milheiro padrão</span>' +
+    '<input type="number" class="settings-company-milheiro" min="0" step="0.01" value="' +
+    (company.milheiro || 0) +
+    '" />' +
+    '</label>' +
+    '<button class="remove-company" type="button" title="Remover companhia">x</button>';
+
+  row.querySelector('.remove-company').addEventListener('click', function () {
+    row.remove();
+  });
+
+  return row;
+}
+
+function renderSettingsCompanies() {
+  const list = document.getElementById('settingsCompaniesList');
+  list.innerHTML = '';
+  getCompanyOptions().forEach(function (company) {
+    list.appendChild(createSettingsCompanyRow(company));
+  });
+}
+
+function fillSettingsForm() {
+  document.getElementById('settingsMercadoPago').value = appSettings.taxaMercadoPago;
+  document.getElementById('settingsTaxaExtra').value = appSettings.taxaExtra;
+  renderSettingsCompanies();
+}
+
+function readSettingsForm() {
+  const companies = Array.from(document.querySelectorAll('.settings-company-row'))
+    .map(function (row) {
+      return {
+        name: row.querySelector('.settings-company-name').value.trim().toUpperCase(),
+        milheiro: parseNumber(row.querySelector('.settings-company-milheiro').value)
+      };
+    })
+    .filter(function (company) {
+      return company.name;
+    });
+
+  return {
+    taxaMercadoPago: parseNumber(document.getElementById('settingsMercadoPago').value),
+    taxaExtra: parseNumber(document.getElementById('settingsTaxaExtra').value),
+    companies: companies.length ? companies : DEFAULT_SETTINGS.companies.slice()
+  };
+}
+
+function syncAllCompanyRows() {
+  getCompanyRows().forEach(function (row) {
+    const select = row.querySelector('select[name="cia[]"]');
+    const previousValue = select.value;
+    populateCompanySelect(select, previousValue);
+    if (select.value !== previousValue) {
+      applyDefaultMilheiro(row);
+    }
+    syncCompanyRowMode(row);
+  });
+}
+
+function setActiveView(view) {
+  const quoteView = document.getElementById('quoteView');
+  const settingsView = document.getElementById('settingsView');
+  const summaryCard = document.getElementById('summaryCard');
+  const isSettings = view === 'settings';
+
+  quoteView.classList.toggle('is-hidden', isSettings);
+  settingsView.classList.toggle('is-hidden', !isSettings);
+  summaryCard.classList.toggle('is-hidden', isSettings);
+
+  document.getElementById('newQuoteBtn').classList.toggle('menu-item-active', !isSettings);
+  document.getElementById('settingsBtn').classList.toggle('menu-item-active', isSettings);
+}
+
 function getCompanyRows() {
   return Array.from(document.querySelectorAll('.company-row'));
 }
@@ -56,11 +243,20 @@ function buildCompanyRow(defaults) {
   const row = fragment.querySelector('.company-row');
 
   if (defaults) {
-    row.querySelector('select[name="cia[]"]').value = defaults.cia || 'AZUL';
+    populateCompanySelect(row.querySelector('select[name="cia[]"]'), defaults.cia || 'AZUL');
+    row.querySelector('select[name="modalidade[]"]').value = defaults.modalidade || 'milhas';
     row.querySelector('input[name="milhas[]"]').value = defaults.milhas || 0;
     row.querySelector('input[name="milheiro[]"]').value = defaults.milheiro || 0;
     row.querySelector('input[name="taxas[]"]').value = defaults.taxas || 0;
+    row.querySelector('input[name="valorDinheiro[]"]').value = defaults.valorDinheiro || 0;
+    row.querySelector('input[name="taxaResgate[]"]').value = defaults.taxaResgate || 0;
+    row.querySelector('input[name="cartaoTavi[]"]').checked = Boolean(defaults.cartaoTavi);
+  } else {
+    populateCompanySelect(row.querySelector('select[name="cia[]"]'));
+    applyDefaultMilheiro(row);
   }
+
+  syncCompanyRowMode(row);
 
   return row;
 }
@@ -77,9 +273,13 @@ function getFormValues() {
   const companies = getCompanyRows().map(function (row) {
     return {
       cia: row.querySelector('select[name="cia[]"]').value,
+      modalidade: row.querySelector('select[name="modalidade[]"]').value,
       milhas: parseNumber(row.querySelector('input[name="milhas[]"]').value),
       milheiro: parseNumber(row.querySelector('input[name="milheiro[]"]').value),
-      taxas: parseNumber(row.querySelector('input[name="taxas[]"]').value)
+      taxas: parseNumber(row.querySelector('input[name="taxas[]"]').value),
+      valorDinheiro: parseNumber(row.querySelector('input[name="valorDinheiro[]"]').value),
+      taxaResgate: parseNumber(row.querySelector('input[name="taxaResgate[]"]').value),
+      cartaoTavi: row.querySelector('input[name="cartaoTavi[]"]').checked
     };
   });
 
@@ -93,6 +293,8 @@ function getFormValues() {
     volta: '',
     valorPaganteRef: parseNumber(document.getElementById('valorPaganteRef').value),
     comissao: parseNumber(document.getElementById('comissao').value),
+    taxaMercadoPago: appSettings.taxaMercadoPago,
+    taxaExtra: appSettings.taxaExtra,
     companies: companies
   };
 }
@@ -100,21 +302,36 @@ function getFormValues() {
 function computeQuote(values) {
   const companies = values.companies.map(function (company) {
     const custoMilhas = (Math.max(0, company.milhas) / 1000) * Math.max(0, company.milheiro);
-    const custoTotal = custoMilhas + Math.max(0, company.taxas);
+    const valorDinheiroBase =
+      company.modalidade === 'pontos_dinheiro' ? Math.max(0, company.valorDinheiro) : 0;
+    const descontoTavi =
+      company.modalidade === 'pontos_dinheiro' && company.cartaoTavi ? valorDinheiroBase * 0.1 : 0;
+    const valorDinheiroLiquido = valorDinheiroBase - descontoTavi;
+    const taxaResgate =
+      company.modalidade === 'pontos_dinheiro' ? Math.max(0, company.taxaResgate) : 0;
+    const custoTotal =
+      custoMilhas + valorDinheiroLiquido + Math.max(0, company.taxas) + taxaResgate;
 
     return {
       cia: company.cia,
+      modalidade: company.modalidade,
       milhas: Math.max(0, company.milhas),
       milheiro: Math.max(0, company.milheiro),
       taxas: Math.max(0, company.taxas),
+      valorDinheiro: valorDinheiroBase,
+      descontoTavi: descontoTavi,
+      valorDinheiroLiquido: valorDinheiroLiquido,
+      taxaResgate: taxaResgate,
+      cartaoTavi: company.cartaoTavi,
       custoMilhas: custoMilhas,
       custoTotal: custoTotal
     };
   });
 
-  const custoTotal = companies.reduce(function (sum, company) {
+  const custoTotalBase = companies.reduce(function (sum, company) {
     return sum + company.custoTotal;
   }, 0);
+  const custoTotal = custoTotalBase + Math.max(0, values.taxaExtra);
 
   const margemMinima = custoTotal * (1 + Math.max(0, values.comissao) / 100);
   const ancoraReferencia = values.valorPaganteRef > 0 ? values.valorPaganteRef * 0.9 : 0;
@@ -150,6 +367,7 @@ function computeQuote(values) {
   return {
     companies: companies,
     custoTotal: custoTotal,
+    custoTotalBase: custoTotalBase,
     precoPix: precoPix,
     lucro: lucro,
     lucroPercentual: lucroPercentual,
@@ -163,12 +381,13 @@ function computeQuote(values) {
 }
 
 function buildInstallments(totalPix, semJurosLimit) {
+  const mercadoPagoRate = arguments.length > 2 ? Math.max(0, arguments[2]) / 100 : 0;
   const limit = semJurosLimit === 'pix' ? 0 : parseInt(semJurosLimit, 10);
   const installments = [];
 
   for (let i = 1; i <= 12; i += 1) {
     const rate = i <= limit ? 0 : INSTALLMENT_RATES[i] || 0;
-    const totalWithRate = totalPix * (1 + rate);
+    const totalWithRate = totalPix * (1 + rate + mercadoPagoRate);
     installments.push({
       times: i,
       perInstallment: i > 0 ? totalWithRate / i : 0,
@@ -385,7 +604,11 @@ function renderHistory(history) {
 function updateUI() {
   const values = getFormValues();
   const computed = computeQuote(values);
-  const installments = buildInstallments(computed.precoPix, values.parcelamentoSemJuros);
+  const installments = buildInstallments(
+    computed.precoPix,
+    values.parcelamentoSemJuros,
+    values.taxaMercadoPago
+  );
   const statusCard = document.querySelector('.status-card');
 
   document.getElementById('metricCusto').textContent = formatBRL(computed.custoTotal);
@@ -743,6 +966,17 @@ function bindCompanyRowEvents() {
       field.addEventListener('change', updateUI);
     });
 
+    row.querySelector('select[name="cia[]"]').addEventListener('change', function () {
+      applyDefaultMilheiro(row);
+      syncCompanyRowMode(row);
+      updateUI();
+    });
+
+    row.querySelector('select[name="modalidade[]"]').addEventListener('change', function () {
+      syncCompanyRowMode(row);
+      updateUI();
+    });
+
     row.querySelector('.remove-company').addEventListener('click', function () {
       if (getCompanyRows().length === 1) return;
       row.remove();
@@ -772,16 +1006,38 @@ function bindStaticEvents() {
     document.getElementById('historyPanel').classList.toggle('is-collapsed');
   });
   document.getElementById('newQuoteBtn').addEventListener('click', function () {
+    setActiveView('quote');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+  document.getElementById('settingsBtn').addEventListener('click', function () {
+    setActiveView('settings');
+  });
+  document.getElementById('addSettingsCompanyBtn').addEventListener('click', function () {
+    document.getElementById('settingsCompaniesList').appendChild(
+      createSettingsCompanyRow({ name: '', milheiro: 0 })
+    );
+  });
+  document.getElementById('saveSettingsBtn').addEventListener('click', function () {
+    appSettings = readSettingsForm();
+    persistSettings(appSettings);
+    syncAllCompanyRows();
+    setActiveView('quote');
+    updateUI();
+    setFeedback('Configurações salvas. Os parâmetros internos foram atualizados.', '--success');
   });
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+  fillSettingsForm();
   addCompany({
     cia: 'AZUL',
+    modalidade: 'milhas',
     milhas: 100000,
     milheiro: 15.5,
-    taxas: 100
+    taxas: 100,
+    valorDinheiro: 0,
+    taxaResgate: 0,
+    cartaoTavi: false
   });
   bindStaticEvents();
   refreshHistory();
