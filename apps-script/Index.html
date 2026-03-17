@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>AD2 Flights - Calculadora de Emissao</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <?!= include('CSS'); ?>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand-block">
+          <div class="brand-mark">AD2</div>
+          <div>
+            <p class="brand-kicker">AD2 Flights</p>
+            <h1 class="brand-name">Imperatriz Cotacoes</h1>
+          </div>
+        </div>
+
+        <nav class="sidebar-nav">
+          <button class="menu-item menu-item-active" type="button" id="newQuoteBtn">
+            <span class="menu-icon">+</span>
+            <span>Nova Cotacao</span>
+          </button>
+          <button class="menu-item" type="button" id="historyBtn">
+            <span class="menu-icon">H</span>
+            <span>Historico</span>
+          </button>
+        </nav>
+
+        <section class="history-panel" id="historyPanel">
+          <div class="history-header">
+            <span>Historico recente</span>
+            <span class="history-count" id="historyCount">0</span>
+          </div>
+          <div class="history-list" id="historyList">
+            <p class="history-empty">Nenhuma cotacao salva ainda.</p>
+          </div>
+        </section>
+
+        <button class="logout-link" type="button">Sair</button>
+      </aside>
+
+      <main class="dashboard">
+        <section class="workspace">
+          <div class="hero-bar">CALCULADORA DE EMISSAO</div>
+
+          <form id="quoteForm" class="quote-layout">
+            <section class="panel">
+              <div class="panel-title">DADOS DA OFERTA</div>
+              <div class="field-grid field-grid-offer">
+                <label class="field">
+                  <span>Cliente</span>
+                  <input
+                    type="text"
+                    name="cliente"
+                    id="cliente"
+                    placeholder="Nome do cliente"
+                    value="Luana"
+                  />
+                </label>
+
+                <label class="field">
+                  <span>Parcelamento s/ juros</span>
+                  <select name="parcelamentoSemJuros" id="parcelamentoSemJuros">
+                    <option value="pix">Apenas Pix</option>
+                    <option value="1">1x sem juros</option>
+                    <option value="2">2x sem juros</option>
+                    <option value="3">3x sem juros</option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span>Bagagem</span>
+                  <select name="bagagem" id="bagagem">
+                    <option value="Mochila + 10kg">Mochila + 10kg</option>
+                    <option value="Mochila + bagagem despachada">Mochila + bagagem despachada</option>
+                    <option value="Somente mochila">Somente mochila</option>
+                  </select>
+                </label>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-title">CUSTOS DE EMISSAO</div>
+              <div class="companies-list" id="companiesList"></div>
+              <button class="secondary-action" type="button" id="addCompanyBtn">
+                ADICIONAR 2a COMPANHIA
+              </button>
+            </section>
+
+            <section class="panel panel-analysis">
+              <div class="panel-title">ANALISE DE LUCRO E MERCADO</div>
+              <div class="field-grid">
+                <label class="field field-span-2">
+                  <span>Preco de mercado total (referencia)</span>
+                  <input
+                    type="number"
+                    name="valorPaganteRef"
+                    id="valorPaganteRef"
+                    min="0"
+                    step="0.01"
+                    placeholder="0,00"
+                  />
+                </label>
+
+                <label class="field field-compact">
+                  <span>Comissao aplicada (%)</span>
+                  <input
+                    type="number"
+                    name="comissao"
+                    id="comissao"
+                    min="0"
+                    step="0.1"
+                    value="18"
+                  />
+                </label>
+
+                <div class="status-card status-card-inline">
+                  <strong id="marketAlertLabel">Emissao neutra</strong>
+                  <small id="marketAlertText">Preencha os custos para avaliar a operacao.</small>
+                </div>
+              </div>
+
+              <div class="analysis-metrics">
+                <div class="analysis-metric">
+                  <span>Custo total</span>
+                  <strong id="metricCusto">R$ 0,00</strong>
+                </div>
+                <div class="analysis-metric">
+                  <span>Lucro liquido</span>
+                  <strong id="metricLucro">R$ 0,00 (0,00%)</strong>
+                </div>
+              </div>
+            </section>
+          </form>
+
+          <div class="workspace-footer">
+            <div class="workspace-feedback" id="actionFeedback">
+              Cotacao pronta para calcular, copiar e salvar na planilha.
+            </div>
+            <button class="primary-action" type="button" id="copySaveBtn">
+              COPIAR E SALVAR
+            </button>
+          </div>
+        </section>
+
+        <aside class="summary-card">
+          <div class="summary-header">
+            <div class="summary-logo">AD2</div>
+            <div>
+              <div class="summary-company">AD2 Passagens Aereas</div>
+              <div class="summary-airline" id="summaryAirline">Companhia aerea a definir</div>
+            </div>
+          </div>
+
+          <div class="summary-price-block">
+            <span class="summary-caption">TOTAL A VISTA (PIX)</span>
+            <strong id="summaryPix">R$ 0,00</strong>
+            <small>Valores sujeitos a alteracao sem aviso previo</small>
+          </div>
+
+          <section class="summary-section">
+            <h2>PARCELAMENTO NO CARTAO</h2>
+            <div class="installments-table" id="installmentsTable"></div>
+          </section>
+
+          <section class="summary-section">
+            <h2>O QUE ESTA INCLUSO</h2>
+            <ul class="included-list" id="includedList">
+              <li>Taxas inclusas</li>
+              <li>Remarcacao c/ custo</li>
+              <li>Auxilio no check-in</li>
+              <li>01 bagagem de 10kg por passageiro</li>
+              <li>Assistencia Juridica</li>
+              <li>Sem reembolso</li>
+            </ul>
+          </section>
+
+          <footer class="summary-footer">
+            CNPJ 00.000.000/0001-00 | Rua Exemplo, 123 | WhatsApp AD2
+          </footer>
+        </aside>
+      </main>
+    </div>
+
+    <template id="companyRowTemplate">
+      <div class="company-row">
+        <div class="company-row-head">
+          <span class="company-label">CIA <span class="company-index"></span></span>
+          <button class="remove-company" type="button" title="Remover companhia">x</button>
+        </div>
+        <div class="field-grid field-grid-company">
+          <label class="field">
+            <span>Companhia</span>
+            <select name="cia[]">
+              <option value="AZUL">AZUL</option>
+              <option value="LATAM">LATAM</option>
+              <option value="GOL">GOL</option>
+              <option value="TAP">TAP</option>
+              <option value="AMERICAN">AMERICAN</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Milhas</span>
+            <input type="number" name="milhas[]" min="0" step="1" value="100000" />
+          </label>
+          <label class="field">
+            <span>Milheiro</span>
+            <input type="number" name="milheiro[]" min="0" step="0.01" value="15.5" />
+          </label>
+          <label class="field">
+            <span>Taxas</span>
+            <input type="number" name="taxas[]" min="0" step="0.01" value="100" />
+          </label>
+        </div>
+      </div>
+    </template>
+
+    <?!= include('JS'); ?>
+  </body>
+</html>

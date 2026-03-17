@@ -1,7 +1,8 @@
 const HISTORY_STORAGE_KEY = 'ad2-flights-history';
 const MAX_HISTORY_ITEMS = 6;
-const SUPABASE_URL = '';
-const SUPABASE_ANON_KEY = '';
+const SUPABASE_URL = 'https://vzupqsmahouhhrqofgyh.supabase.co';
+const SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6dXBxc21haG91aGhycW9mZ3loIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NzU3MzQsImV4cCI6MjA4OTM1MTczNH0.BUsoJTRM3jMbxb0UOFoXe2slXhUKNwU4xUQ57Yn8pEk';
 const SUPABASE_TABLE = 'quotes';
 
 const INSTALLMENT_RATES = {

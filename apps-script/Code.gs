@@ -1,7 +1,8 @@
+const SPREADSHEET_ID = '10UswHGZKMTF-i5TFQrp2cbHjcp2smXBnALEKf8GVCbY';
 const SHEET_NAME = 'Cotacoes';
 
 function doGet(e) {
-  const action = (e && e.parameter && e.parameter.action) || 'health';
+  const action = (e && e.parameter && e.parameter.action) || '';
 
   if (action === 'history') {
     return jsonOutput({
@@ -10,11 +11,10 @@ function doGet(e) {
     });
   }
 
-  return jsonOutput({
-    ok: true,
-    service: 'ad2-flights-dashboard',
-    date: new Date().toISOString()
-  });
+  return HtmlService.createTemplateFromFile('Index')
+    .evaluate()
+    .setTitle('AD2 Flights - Calculadora de Emissao')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 function doPost(e) {
@@ -43,6 +43,25 @@ function doPost(e) {
       error: error.message || 'unexpected_error'
     });
   }
+}
+
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
+
+function saveQuote(payload) {
+  const saved = saveQuote_(payload);
+
+  return {
+    ok: true,
+    id: saved.id,
+    savedAt: saved.savedAt,
+    message: 'Cotacao copiada e salva na planilha.'
+  };
+}
+
+function getQuoteHistory(limit) {
+  return getHistory_(Number(limit || 6));
 }
 
 function saveQuote_(payload) {
@@ -100,7 +119,7 @@ function getHistory_(limit) {
 }
 
 function getOrCreateSheet_() {
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
   let sheet = spreadsheet.getSheetByName(SHEET_NAME);
 
   if (!sheet) {
