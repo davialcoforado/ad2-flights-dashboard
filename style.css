@@ -101,6 +101,12 @@ select {
   max-width: 150px;
 }
 
+.brand-name-sidebar {
+  font-size: 22px;
+  line-height: 1.15;
+  max-width: 160px;
+}
+
 .sidebar-nav {
   display: flex;
   flex-direction: column;
@@ -546,7 +552,7 @@ select {
 .summary-company {
   font-size: 14px;
   font-weight: 800;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1.08;
 }
