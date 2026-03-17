@@ -538,6 +538,28 @@ function saveRemoteQuote(payload) {
     });
 }
 
+function persistQuote(payload, localEntry) {
+  if (!WEB_APP_URL) {
+    saveLocalHistoryEntry(localEntry);
+    renderHistory(loadLocalHistory());
+    return Promise.resolve({ mode: 'local_only' });
+  }
+
+  return saveRemoteQuote(payload)
+    .then(function (data) {
+      localEntry.id = data.id || '';
+      localEntry.savedAt = data.savedAt || localEntry.savedAt;
+      return refreshHistory().then(function () {
+        return { mode: 'remote', data: data };
+      });
+    })
+    .catch(function () {
+      saveLocalHistoryEntry(localEntry);
+      renderHistory(loadLocalHistory());
+      return Promise.reject(new Error('save_failed'));
+    });
+}
+
 function refreshHistory() {
   if (!WEB_APP_URL) {
     renderHistory(loadLocalHistory());
@@ -586,88 +608,77 @@ function handleCopyAndSave() {
     result.offerText
   );
   const localEntry = buildHistoryEntry(payload);
+  setFeedback('Copiando a arte da cotacao...', '--text-700');
 
-  if (!WEB_APP_URL) {
-    saveLocalHistoryEntry(localEntry);
-    renderHistory(loadLocalHistory());
-    copyOfferCardToClipboard()
-      .then(function () {
-        setFeedback(
-          'Imagem da cotacao copiada. Falta configurar WEB_APP_URL no app.js para salvar na planilha.',
-          '--warning'
-        );
-      })
-      .catch(function () {
-        return downloadOfferCardImage()
-          .then(function () {
-            setFeedback(
-              'Imagem pronta para download. Falta configurar WEB_APP_URL no app.js para salvar na planilha.',
-              '--warning'
-            );
-          })
-          .catch(function () {
-            return copyOfferText(result.offerText).then(function () {
-              setFeedback(
-                'Nao consegui copiar a imagem, mas deixei o texto copiado. Falta configurar WEB_APP_URL no app.js para salvar na planilha.',
-                '--warning'
-              );
-            });
-          });
-      })
-      .catch(function () {
-        setFeedback(
-          'Configure WEB_APP_URL no app.js para salvar na planilha. Nem a imagem nem o texto puderam ser copiados.',
-          '--danger'
-        );
-      });
-    return;
-  }
-
-  setFeedback('Salvando cotacao na planilha...', '--text-700');
-
-  const savePromise = saveRemoteQuote(payload)
-    .then(function (data) {
-      localEntry.id = data.id || '';
-      localEntry.savedAt = data.savedAt || localEntry.savedAt;
-    })
-    .catch(function (error) {
-      saveLocalHistoryEntry(localEntry);
-      renderHistory(loadLocalHistory());
-      throw error;
-    });
-
-  savePromise
+  copyOfferCardToClipboard()
     .then(function () {
-      return refreshHistory();
-    })
-    .then(function () {
-      return copyOfferCardToClipboard();
-    })
-    .then(function () {
-      setFeedback('Imagem da cotacao copiada e salva na planilha.', '--success');
-    })
-    .catch(function () {
-      return downloadOfferCardImage()
-        .then(function () {
+      setFeedback('Imagem copiada. Salvando cotacao...', '--text-700');
+      return persistQuote(payload, localEntry)
+        .then(function (resultInfo) {
+          if (resultInfo.mode === 'remote') {
+            setFeedback('Imagem copiada e cotacao salva na planilha.', '--success');
+            return;
+          }
+
           setFeedback(
-            'Salvei no historico local e gerei a imagem para download. O salvamento na planilha falhou.',
+            'Imagem copiada. Falta configurar WEB_APP_URL no app.js para salvar na planilha.',
             '--warning'
           );
         })
         .catch(function () {
-          return copyOfferText(result.offerText).then(function () {
-            setFeedback(
-              'Nao consegui copiar a imagem. Copiei o texto e guardei a cotacao no historico local.',
-              '--warning'
-            );
-          });
+          setFeedback(
+            'Imagem copiada, mas o salvamento na planilha falhou. Guardei no historico local.',
+            '--warning'
+          );
         });
     })
     .catch(function () {
-      setFeedback(
-        'Falha ao salvar na planilha e tambem ao gerar a imagem. Mantive a cotacao no historico local.',
-        '--danger'
-      );
+      return copyOfferText(result.offerText)
+        .then(function () {
+          setFeedback('Nao consegui copiar a imagem. Copiei o texto e estou salvando...', '--warning');
+
+          return persistQuote(payload, localEntry)
+            .then(function (resultInfo) {
+              if (resultInfo.mode === 'remote') {
+                setFeedback('Texto copiado e cotacao salva na planilha.', '--warning');
+                return;
+              }
+
+              setFeedback(
+                'Texto copiado. Falta configurar WEB_APP_URL no app.js para salvar na planilha.',
+                '--warning'
+              );
+            })
+            .catch(function () {
+              setFeedback(
+                'Texto copiado, mas o salvamento na planilha falhou. Guardei no historico local.',
+                '--warning'
+              );
+            });
+        })
+        .catch(function () {
+          return persistQuote(payload, localEntry)
+            .then(function (resultInfo) {
+              if (resultInfo.mode === 'remote') {
+                setFeedback(
+                  'Nao consegui copiar automaticamente, mas a cotacao foi salva na planilha.',
+                  '--warning'
+                );
+                return;
+              }
+
+              setFeedback(
+                'Nao consegui copiar automaticamente. A cotacao ficou salva so no historico local.',
+                '--warning'
+              );
+            })
+            .catch(function () {
+              setFeedback(
+                'Falha ao copiar e ao salvar na planilha. Mantive a cotacao no historico local.',
+                '--danger'
+              );
+            });
+        });
     });
 }
 
