@@ -386,15 +386,6 @@ function updateUI() {
   const values = getFormValues();
   const computed = computeQuote(values);
   const installments = buildInstallments(computed.precoPix, values.parcelamentoSemJuros);
-  const airlineText = computed.companies.length
-    ? Array.from(
-        new Set(
-          computed.companies.map(function (company) {
-            return company.cia;
-          })
-        )
-      ).join(', ')
-    : 'Companhia aérea a definir';
   const statusCard = document.querySelector('.status-card');
 
   document.getElementById('metricCusto').textContent = formatBRL(computed.custoTotal);
@@ -411,7 +402,6 @@ function updateUI() {
   statusCard.dataset.level = computed.alertLevel;
 
   document.getElementById('summaryPix').textContent = formatBRL(computed.precoPix);
-  document.getElementById('summaryAirline').textContent = airlineText;
 
   updateInstallmentsUI(installments);
   updateIncludedList(values);
