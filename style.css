@@ -82,6 +82,7 @@ select {
   border-radius: 0;
   background: transparent;
   padding: 0;
+  filter: brightness(0) invert(1);
 }
 
 .sidebar-nav {
@@ -524,6 +525,7 @@ select {
   background: transparent;
   padding: 0;
   flex: 0 0 auto;
+  filter: brightness(0) invert(1);
 }
 
 .summary-price-block {
