@@ -74,6 +74,15 @@ select {
   letter-spacing: 0.06em;
 }
 
+.brand-logo-image {
+  width: 122px;
+  height: 78px;
+  object-fit: contain;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+}
+
 .brand-kicker,
 .brand-name {
   margin: 0;
@@ -87,7 +96,7 @@ select {
 }
 
 .brand-name {
-  font-size: 18px;
+  font-size: 22px;
   line-height: 1.15;
   max-width: 150px;
 }
@@ -522,6 +531,15 @@ select {
   place-items: center;
   font-size: 22px;
   font-weight: 800;
+}
+
+.summary-logo-image {
+  width: 124px;
+  height: 72px;
+  border-radius: 0;
+  object-fit: contain;
+  background: transparent;
+  padding: 0;
 }
 
 .summary-company {

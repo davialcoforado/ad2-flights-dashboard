@@ -190,7 +190,7 @@ function buildOfferText(values, computed, installments) {
   const featuredInstallment = installments[5];
 
   return (
-    'AD2 Passagens Aereas\n\n' +
+    'AD2 Flights\n\n' +
     'Cliente: ' + (values.cliente || 'Nao informado') + '\n' +
     'Companhias: ' + (companiesText || 'A definir') + '\n' +
     'Bagagem: ' + values.bagagem + '\n\n' +
