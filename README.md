@@ -1,42 +1,51 @@
 # AD2 Flights Dashboard
 
-Dashboard interno de cotacao com Google Sheets + Apps Script como fluxo principal.
+Dashboard interno de cotacao com GitHub Pages no front e Supabase no historico remoto.
 
-## Fluxo recomendado
+## Configuracao rapida
 
-1. Crie uma planilha no Google Sheets.
-2. Abra `Extensoes > Apps Script`.
-3. Cole o conteudo de [Code.gs](/Users/analuisabarros/Documents/post/ad2-flights-dashboard/apps-script/Code.gs) ou use `clasp push` a partir deste projeto.
-4. Publique em `Implantar > Nova implantacao > Aplicativo da web`.
-5. Copie a URL final do Web App.
-6. Abra [app.js](/Users/analuisabarros/Documents/post/ad2-flights-dashboard/app.js).
-7. Preencha a constante `WEB_APP_URL`.
-
-Exemplo:
+1. Crie um projeto no Supabase.
+2. No SQL Editor, rode o conteudo de [supabase.sql](/Users/analuisabarros/Documents/post/ad2-flights-dashboard/supabase.sql).
+3. Em `Project Settings > API`, copie:
+   - `Project URL`
+   - `anon public key`
+4. Abra [app.js](/Users/analuisabarros/Documents/post/ad2-flights-dashboard/app.js).
+5. Preencha:
 
 ```js
-const WEB_APP_URL = 'https://script.google.com/macros/s/SEU_ID/exec';
+const SUPABASE_URL = 'https://SEU-PROJETO.supabase.co';
+const SUPABASE_ANON_KEY = 'SUA_ANON_KEY';
+const SUPABASE_TABLE = 'quotes';
 ```
 
 ## Como o projeto se comporta
 
-- O caminho principal e salvar/ler da planilha.
-- Se `WEB_APP_URL` ainda estiver vazio, o projeto avisa isso na interface.
-- Em falha temporaria da planilha, ele ainda segura um fallback local para nao perder a cotacao.
+- O botao gera a arte da cotacao e tenta copiar a imagem.
+- O historico remoto usa Supabase via REST.
+- Se o Supabase nao estiver configurado ou falhar, o projeto segura um fallback local em `localStorage`.
 
-## Estrutura da planilha
+## Estrutura de dados
 
-A aba `Cotacoes` sera criada automaticamente com colunas para cliente, rota, custos, lucro, parcelamento e texto final da oferta.
+A tabela `quotes` guarda:
 
-## Usando clasp
+- cliente
+- bagagem
+- parcelamento
+- custos
+- preco final
+- lucro
+- economia
+- companhias
+- parcelamento detalhado
+- texto da oferta
 
-O projeto ja tem [`.clasp.json`](/Users/analuisabarros/Documents/post/ad2-flights-dashboard/.clasp.json) apontando para `apps-script`.
+## Publicacao
 
-Com o binario local instalado no workspace, o fluxo fica:
+Como o front fica no GitHub Pages, basta subir as alteracoes:
 
 ```bash
 cd /Users/analuisabarros/Documents/post/ad2-flights-dashboard
-../.clasp-tools/node_modules/.bin/clasp status
-../.clasp-tools/node_modules/.bin/clasp push
-../.clasp-tools/node_modules/.bin/clasp open
+git add .
+git commit -m "Configura Supabase"
+git push origin main
 ```

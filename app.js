@@ -1,7 +1,8 @@
 const HISTORY_STORAGE_KEY = 'ad2-flights-history';
 const MAX_HISTORY_ITEMS = 6;
-const WEB_APP_URL =
-  'https://script.google.com/macros/s/AKfycbx42Eg3JaOltRoceQdgdqkbyvqA4LwdcmE5PJD3NR1DiqzFomWbfoG7mX_nLi3-WVFn/exec';
+const SUPABASE_URL = '';
+const SUPABASE_ANON_KEY = '';
+const SUPABASE_TABLE = 'quotes';
 
 const INSTALLMENT_RATES = {
   1: 0.0363,
@@ -222,6 +223,66 @@ function buildHistoryEntry(payload) {
     route: payload.origem + ' - ' + payload.destino,
     precoPix: payload.precoPix,
     savedAt: payload.savedAt || new Date().toLocaleString('pt-BR')
+  };
+}
+
+function isSupabaseConfigured() {
+  return Boolean(SUPABASE_URL && SUPABASE_ANON_KEY && SUPABASE_TABLE);
+}
+
+function getSupabaseEndpoint(query) {
+  const url = new URL('/rest/v1/' + SUPABASE_TABLE, SUPABASE_URL);
+
+  Object.keys(query || {}).forEach(function (key) {
+    url.searchParams.set(key, query[key]);
+  });
+
+  return url.toString();
+}
+
+function getSupabaseHeaders(extraHeaders) {
+  return Object.assign(
+    {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: 'Bearer ' + SUPABASE_ANON_KEY,
+      'Content-Type': 'application/json'
+    },
+    extraHeaders || {}
+  );
+}
+
+function toSupabaseRecord(payload) {
+  return {
+    saved_at: payload.savedAt,
+    cliente: payload.cliente || '',
+    origem: payload.origem || '',
+    destino: payload.destino || '',
+    ida: payload.ida || '',
+    volta: payload.volta || '',
+    bagagem: payload.bagagem || '',
+    parcelamento_sem_juros: payload.parcelamentoSemJuros || '',
+    valor_pagante_ref: Number(payload.valorPaganteRef || 0),
+    comissao: Number(payload.comissao || 0),
+    milhas_totais: Number(payload.milhasTotais || 0),
+    custo_total: Number(payload.custoTotal || 0),
+    preco_pix: Number(payload.precoPix || 0),
+    lucro: Number(payload.lucro || 0),
+    lucro_percentual: Number(payload.lucroPercentual || 0),
+    economia: Number(payload.economia || 0),
+    economia_percentual: Number(payload.economiaPercentual || 0),
+    companies: payload.companies || [],
+    installments: payload.installments || [],
+    offer_text: payload.offerText || ''
+  };
+}
+
+function fromSupabaseRow(row) {
+  return {
+    id: row.id || '',
+    cliente: row.cliente || 'Sem cliente',
+    route: (row.origem || '-') + ' - ' + (row.destino || '-'),
+    precoPix: parseNumber(row.preco_pix),
+    savedAt: row.saved_at || ''
   };
 }
 
@@ -501,45 +562,46 @@ function copyOfferText(text) {
   return Promise.resolve();
 }
 
-function buildRemoteUrl(action) {
-  const url = new URL(WEB_APP_URL);
-  url.searchParams.set('action', action);
-  url.searchParams.set('limit', String(MAX_HISTORY_ITEMS));
-  return url.toString();
-}
-
 function fetchRemoteHistory() {
-  return fetch(buildRemoteUrl('history'))
+  return fetch(
+    getSupabaseEndpoint({
+      select: 'id,cliente,origem,destino,preco_pix,saved_at',
+      order: 'created_at.desc',
+      limit: String(MAX_HISTORY_ITEMS)
+    }),
+    {
+      headers: getSupabaseHeaders()
+    }
+  )
     .then(function (response) {
       if (!response.ok) throw new Error('history_request_failed');
       return response.json();
     })
     .then(function (data) {
-      return Array.isArray(data.items) ? data.items : [];
+      return Array.isArray(data) ? data : [];
     });
 }
 
 function saveRemoteQuote(payload) {
-  const body = new URLSearchParams();
-  body.set('action', 'save');
-  body.set('payload', JSON.stringify(payload));
-
-  return fetch(WEB_APP_URL, {
+  return fetch(getSupabaseEndpoint(), {
     method: 'POST',
-    body: body
+    headers: getSupabaseHeaders({
+      Prefer: 'return=representation'
+    }),
+    body: JSON.stringify(toSupabaseRecord(payload))
   })
     .then(function (response) {
       if (!response.ok) throw new Error('save_request_failed');
       return response.json();
     })
     .then(function (data) {
-      if (!data.ok) throw new Error(data.error || 'save_failed');
-      return data;
+      if (!Array.isArray(data) || !data.length) throw new Error('save_failed');
+      return data[0];
     });
 }
 
 function persistQuote(payload, localEntry) {
-  if (!WEB_APP_URL) {
+  if (!isSupabaseConfigured()) {
     saveLocalHistoryEntry(localEntry);
     renderHistory(loadLocalHistory());
     return Promise.resolve({ mode: 'local_only' });
@@ -548,7 +610,7 @@ function persistQuote(payload, localEntry) {
   return saveRemoteQuote(payload)
     .then(function (data) {
       localEntry.id = data.id || '';
-      localEntry.savedAt = data.savedAt || localEntry.savedAt;
+      localEntry.savedAt = data.saved_at || localEntry.savedAt;
       return refreshHistory().then(function () {
         return { mode: 'remote', data: data };
       });
@@ -561,10 +623,10 @@ function persistQuote(payload, localEntry) {
 }
 
 function refreshHistory() {
-  if (!WEB_APP_URL) {
+  if (!isSupabaseConfigured()) {
     renderHistory(loadLocalHistory());
     setFeedback(
-      'Cole a URL do seu Apps Script em WEB_APP_URL no app.js para ativar a planilha.',
+      'Preencha SUPABASE_URL e SUPABASE_ANON_KEY no app.js para ativar o historico remoto.',
       '--text-700'
     );
     return Promise.resolve();
@@ -572,22 +634,12 @@ function refreshHistory() {
 
   return fetchRemoteHistory()
     .then(function (items) {
-      renderHistory(
-        items.map(function (item) {
-          return {
-            id: item.id || '',
-            cliente: item.cliente || 'Sem cliente',
-            route: (item.origem || '-') + ' - ' + (item.destino || '-'),
-            precoPix: parseNumber(item.precoPix),
-            savedAt: item.savedAt || ''
-          };
-        })
-      );
+      renderHistory(items.map(fromSupabaseRow));
     })
     .catch(function () {
       renderHistory(loadLocalHistory());
       setFeedback(
-        'Nao consegui ler a planilha agora. Mantive o historico local como fallback.',
+        'Nao consegui ler o Supabase agora. Mantive o historico local como fallback.',
         '--warning'
       );
     });
@@ -616,18 +668,18 @@ function handleCopyAndSave() {
       return persistQuote(payload, localEntry)
         .then(function (resultInfo) {
           if (resultInfo.mode === 'remote') {
-            setFeedback('Imagem copiada e cotacao salva na planilha.', '--success');
+            setFeedback('Imagem copiada e cotacao salva no Supabase.', '--success');
             return;
           }
 
           setFeedback(
-            'Imagem copiada. Falta configurar WEB_APP_URL no app.js para salvar na planilha.',
+            'Imagem copiada. Falta configurar SUPABASE_URL e SUPABASE_ANON_KEY no app.js.',
             '--warning'
           );
         })
         .catch(function () {
           setFeedback(
-            'Imagem copiada, mas o salvamento na planilha falhou. Guardei no historico local.',
+            'Imagem copiada, mas o salvamento no Supabase falhou. Guardei no historico local.',
             '--warning'
           );
         });
@@ -640,18 +692,18 @@ function handleCopyAndSave() {
           return persistQuote(payload, localEntry)
             .then(function (resultInfo) {
               if (resultInfo.mode === 'remote') {
-                setFeedback('Texto copiado e cotacao salva na planilha.', '--warning');
+                setFeedback('Texto copiado e cotacao salva no Supabase.', '--warning');
                 return;
               }
 
               setFeedback(
-                'Texto copiado. Falta configurar WEB_APP_URL no app.js para salvar na planilha.',
+                'Texto copiado. Falta configurar SUPABASE_URL e SUPABASE_ANON_KEY no app.js.',
                 '--warning'
               );
             })
             .catch(function () {
               setFeedback(
-                'Texto copiado, mas o salvamento na planilha falhou. Guardei no historico local.',
+                'Texto copiado, mas o salvamento no Supabase falhou. Guardei no historico local.',
                 '--warning'
               );
             });
@@ -661,7 +713,7 @@ function handleCopyAndSave() {
             .then(function (resultInfo) {
               if (resultInfo.mode === 'remote') {
                 setFeedback(
-                  'Nao consegui copiar automaticamente, mas a cotacao foi salva na planilha.',
+                  'Nao consegui copiar automaticamente, mas a cotacao foi salva no Supabase.',
                   '--warning'
                 );
                 return;
@@ -674,7 +726,7 @@ function handleCopyAndSave() {
             })
             .catch(function () {
               setFeedback(
-                'Falha ao copiar e ao salvar na planilha. Mantive a cotacao no historico local.',
+                'Falha ao copiar e ao salvar no Supabase. Mantive a cotacao no historico local.',
                 '--danger'
               );
             });
@@ -744,9 +796,9 @@ document.addEventListener('DOMContentLoaded', function () {
   refreshHistory();
   updateUI();
   setFeedback(
-    WEB_APP_URL
-      ? 'Apps Script configurado. O botao gera a arte da cotacao e tenta salvar na planilha.'
-      : 'Cole a URL do seu Apps Script em WEB_APP_URL no app.js para ativar a planilha.',
+    isSupabaseConfigured()
+      ? 'Supabase configurado. O botao gera a arte da cotacao e tenta salvar no historico remoto.'
+      : 'Preencha SUPABASE_URL e SUPABASE_ANON_KEY no app.js para ativar o historico remoto.',
     '--text-700'
   );
 });
