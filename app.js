@@ -85,10 +85,10 @@ function getFormValues() {
     cliente: document.getElementById('cliente').value.trim(),
     parcelamentoSemJuros: document.getElementById('parcelamentoSemJuros').value,
     bagagem: document.getElementById('bagagem').value,
-    origem: document.getElementById('origem').value.trim().toUpperCase(),
-    destino: document.getElementById('destino').value.trim().toUpperCase(),
-    ida: document.getElementById('ida').value,
-    volta: document.getElementById('volta').value,
+    origem: '',
+    destino: '',
+    ida: '',
+    volta: '',
     valorPaganteRef: parseNumber(document.getElementById('valorPaganteRef').value),
     comissao: parseNumber(document.getElementById('comissao').value),
     companies: companies
@@ -178,13 +178,6 @@ function buildInstallments(totalPix, semJurosLimit) {
 }
 
 function buildOfferText(values, computed, installments) {
-  const routeBase =
-    values.origem && values.destino ? values.origem + ' x ' + values.destino : 'Trecho sob consulta';
-  const routeDate = values.volta
-    ? 'Ida ' + formatDate(values.ida) + ' | Volta ' + formatDate(values.volta)
-    : values.ida
-      ? 'Ida ' + formatDate(values.ida)
-      : 'Datas a confirmar';
   const companiesText = Array.from(
     new Set(
       computed.companies.map(function (company) {
@@ -197,8 +190,6 @@ function buildOfferText(values, computed, installments) {
   return (
     'AD2 Passagens Aereas\n\n' +
     'Cliente: ' + (values.cliente || 'Nao informado') + '\n' +
-    'Trecho: ' + routeBase + '\n' +
-    'Datas: ' + routeDate + '\n' +
     'Companhias: ' + (companiesText || 'A definir') + '\n' +
     'Bagagem: ' + values.bagagem + '\n\n' +
     'Total no Pix: ' + formatBRL(computed.precoPix) + '\n' +
@@ -260,7 +251,22 @@ function buildPayload(values, computed, installments, offerText) {
 }
 
 function updateInstallmentsUI(installments) {
-  return installments;
+  const table = document.getElementById('installmentsTable');
+  table.innerHTML = '';
+
+  installments.forEach(function (installment) {
+    const item = document.createElement('div');
+    item.className = 'installment-item';
+    item.innerHTML =
+      '<span>' +
+      installment.times +
+      'x</span><strong>' +
+      formatBRL(installment.perInstallment) +
+      '</strong><small>(' +
+      installment.suffix +
+      ')</small>';
+    table.appendChild(item);
+  });
 }
 
 function updateIncludedList(values) {
@@ -304,7 +310,7 @@ function renderHistory(history) {
       '<strong>' +
       entry.cliente +
       '</strong><span>' +
-      entry.route +
+      'Cotacao salva' +
       '</span><span>' +
       formatBRL(entry.precoPix) +
       ' | ' +
@@ -318,13 +324,6 @@ function updateUI() {
   const values = getFormValues();
   const computed = computeQuote(values);
   const installments = buildInstallments(computed.precoPix, values.parcelamentoSemJuros);
-  const routeText =
-    values.origem && values.destino ? values.origem + ' - ' + values.destino : 'Origem - Destino';
-  const dateText = values.volta
-    ? 'Ida ' + formatDate(values.ida) + ' | Volta ' + formatDate(values.volta)
-    : values.ida
-      ? 'Ida ' + formatDate(values.ida)
-      : 'Datas a confirmar';
   const airlineText = computed.companies.length
     ? Array.from(
         new Set(
@@ -350,8 +349,6 @@ function updateUI() {
   statusCard.dataset.level = computed.alertLevel;
 
   document.getElementById('summaryPix').textContent = formatBRL(computed.precoPix);
-  document.getElementById('summaryRoute').textContent = routeText;
-  document.getElementById('summaryDates').textContent = dateText;
   document.getElementById('summaryAirline').textContent = airlineText;
 
   updateInstallmentsUI(installments);
@@ -497,8 +494,8 @@ function refreshHistory() {
 function handleCopyAndSave() {
   const result = updateUI();
 
-  if (!result.values.cliente || !result.values.origem || !result.values.destino || !result.values.ida) {
-    setFeedback('Preencha cliente, origem, destino e ida antes de copiar e salvar.', '--danger');
+  if (!result.values.cliente) {
+    setFeedback('Preencha pelo menos o cliente antes de copiar e salvar.', '--danger');
     return;
   }
 
@@ -630,7 +627,6 @@ document.addEventListener('DOMContentLoaded', function () {
   bindStaticEvents();
   refreshHistory();
   updateUI();
-  document.getElementById('analysisPanel').open = false;
   setFeedback(
     WEB_APP_URL
       ? 'Apps Script configurado. Salvamento e historico da planilha ativos.'

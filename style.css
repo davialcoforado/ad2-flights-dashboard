@@ -285,63 +285,6 @@ select {
   transform: translateY(-50%);
 }
 
-.panel-collapsible {
-  padding: 0;
-  overflow: hidden;
-}
-
-.analysis-summary {
-  list-style: none;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  padding: 24px 28px;
-  cursor: pointer;
-}
-
-.analysis-summary::-webkit-details-marker {
-  display: none;
-}
-
-.analysis-subtitle {
-  margin: 0;
-  color: var(--text-500);
-  font-size: 13px;
-}
-
-.analysis-summary-metrics {
-  display: flex;
-  gap: 12px;
-}
-
-.analysis-pill {
-  min-width: 150px;
-  padding: 12px 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.9);
-  text-align: left;
-}
-
-.analysis-pill span {
-  display: block;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-500);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.analysis-pill strong {
-  display: block;
-  margin-top: 6px;
-  font-size: 18px;
-}
-
-.analysis-content {
-  padding: 0 28px 28px;
-}
-
 .field-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -349,7 +292,7 @@ select {
 }
 
 .field-grid-offer {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .field-grid-company {
@@ -489,25 +432,26 @@ select {
   color: var(--text-500);
 }
 
-.field-status {
-  justify-content: flex-end;
+.field-compact {
+  max-width: 220px;
 }
 
-.analysis-mini-grid {
+.analysis-metrics {
   margin-top: 18px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  gap: 12px 16px;
 }
 
-.analysis-mini-item {
-  padding: 14px 16px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(245, 201, 88, 0.18);
+.analysis-metric {
+  padding: 16px 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(245, 201, 88, 0.24);
+  text-align: center;
 }
 
-.analysis-mini-item span {
+.analysis-metric span {
   display: block;
   font-size: 12px;
   color: var(--text-700);
@@ -515,8 +459,12 @@ select {
   font-weight: 700;
 }
 
-.analysis-mini-item strong {
+.analysis-metric strong {
   font-size: 18px;
+}
+
+.status-card-inline {
+  align-self: end;
 }
 
 .workspace-footer {
@@ -577,15 +525,8 @@ select {
   text-transform: uppercase;
 }
 
-.summary-route {
-  margin-top: 6px;
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.summary-dates,
 .summary-airline {
-  margin-top: 4px;
+  margin-top: 6px;
   font-size: 13px;
   opacity: 0.82;
 }
@@ -628,6 +569,35 @@ select {
   color: var(--mint-600);
   font-size: 16px;
   font-weight: 800;
+}
+
+.installments-table {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 20px;
+}
+
+.installment-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 10px;
+  align-items: baseline;
+}
+
+.installment-item span {
+  font-weight: 800;
+  color: var(--text-700);
+}
+
+.installment-item strong {
+  color: #0f56a8;
+  font-size: 17px;
+}
+
+.installment-item small {
+  grid-column: 2;
+  color: var(--text-500);
+  font-size: 11px;
 }
 
 .included-list {
@@ -697,22 +667,9 @@ select {
   .field-grid-offer,
   .field-grid-company,
   .field-grid,
-  .analysis-mini-grid {
+  .analysis-metrics,
+  .installments-table {
     grid-template-columns: 1fr;
-  }
-
-  .analysis-summary {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .analysis-summary-metrics {
-    width: 100%;
-    flex-direction: column;
-  }
-
-  .analysis-pill {
-    width: 100%;
   }
 
   .field-span-2 {
