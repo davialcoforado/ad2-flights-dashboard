@@ -405,6 +405,86 @@ function fallbackCopyText(text) {
   return copied;
 }
 
+function canvasToBlob(canvas) {
+  return new Promise(function (resolve, reject) {
+    canvas.toBlob(function (blob) {
+      if (blob) {
+        resolve(blob);
+        return;
+      }
+
+      reject(new Error('blob_failed'));
+    }, 'image/png');
+  });
+}
+
+function downloadBlob(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  window.setTimeout(function () {
+    URL.revokeObjectURL(url);
+  }, 1000);
+}
+
+function copyImageBlob(blob) {
+  if (
+    navigator.clipboard &&
+    window.ClipboardItem &&
+    typeof navigator.clipboard.write === 'function'
+  ) {
+    return navigator.clipboard.write([
+      new ClipboardItem({
+        'image/png': blob
+      })
+    ]);
+  }
+
+  return Promise.reject(new Error('image_clipboard_unavailable'));
+}
+
+function copyOfferCardImage() {
+  const card = document.getElementById('quoteCard');
+
+  if (!card || typeof window.html2canvas !== 'function') {
+    return Promise.reject(new Error('image_renderer_unavailable'));
+  }
+
+  const summaryCard = document.querySelector('.summary-card');
+  summaryCard.classList.add('is-exporting');
+
+  return window
+    .html2canvas(card, {
+      backgroundColor: '#ffffff',
+      scale: window.devicePixelRatio > 1 ? 2 : 1.6,
+      useCORS: true
+    })
+    .then(function (canvas) {
+      return canvasToBlob(canvas);
+    })
+    .finally(function () {
+      summaryCard.classList.remove('is-exporting');
+    });
+}
+
+function copyOfferCardToClipboard() {
+  return copyOfferCardImage().then(function (blob) {
+    return copyImageBlob(blob);
+  });
+}
+
+function downloadOfferCardImage() {
+  return copyOfferCardImage().then(function (blob) {
+    downloadBlob(blob, 'cotacao-ad2.png');
+  });
+}
+
 function copyOfferText(text) {
   if (navigator.clipboard && navigator.clipboard.writeText) {
     return navigator.clipboard.writeText(text).catch(function () {
@@ -510,16 +590,33 @@ function handleCopyAndSave() {
   if (!WEB_APP_URL) {
     saveLocalHistoryEntry(localEntry);
     renderHistory(loadLocalHistory());
-    copyOfferText(result.offerText)
+    copyOfferCardToClipboard()
       .then(function () {
         setFeedback(
-          'Texto copiado. Falta configurar WEB_APP_URL no app.js para salvar na planilha.',
+          'Imagem da cotacao copiada. Falta configurar WEB_APP_URL no app.js para salvar na planilha.',
           '--warning'
         );
       })
       .catch(function () {
+        return downloadOfferCardImage()
+          .then(function () {
+            setFeedback(
+              'Imagem pronta para download. Falta configurar WEB_APP_URL no app.js para salvar na planilha.',
+              '--warning'
+            );
+          })
+          .catch(function () {
+            return copyOfferText(result.offerText).then(function () {
+              setFeedback(
+                'Nao consegui copiar a imagem, mas deixei o texto copiado. Falta configurar WEB_APP_URL no app.js para salvar na planilha.',
+                '--warning'
+              );
+            });
+          });
+      })
+      .catch(function () {
         setFeedback(
-          'Configure WEB_APP_URL no app.js para salvar na planilha. A copia automatica tambem falhou.',
+          'Configure WEB_APP_URL no app.js para salvar na planilha. Nem a imagem nem o texto puderam ser copiados.',
           '--danger'
         );
       });
@@ -544,25 +641,33 @@ function handleCopyAndSave() {
       return refreshHistory();
     })
     .then(function () {
-      return copyOfferText(result.offerText);
+      return copyOfferCardToClipboard();
     })
     .then(function () {
-      setFeedback('Cotacao copiada e salva na planilha.', '--success');
+      setFeedback('Imagem da cotacao copiada e salva na planilha.', '--success');
     })
     .catch(function () {
-      copyOfferText(result.offerText)
+      return downloadOfferCardImage()
         .then(function () {
           setFeedback(
-            'Texto copiado. O salvamento na planilha falhou, mas guardei no historico local.',
+            'Salvei no historico local e gerei a imagem para download. O salvamento na planilha falhou.',
             '--warning'
           );
         })
         .catch(function () {
-          setFeedback(
-            'Falha ao salvar na planilha e copiar automaticamente. Mantive a cotacao no historico local.',
-            '--danger'
-          );
+          return copyOfferText(result.offerText).then(function () {
+            setFeedback(
+              'Nao consegui copiar a imagem. Copiei o texto e guardei a cotacao no historico local.',
+              '--warning'
+            );
+          });
         });
+    })
+    .catch(function () {
+      setFeedback(
+        'Falha ao salvar na planilha e tambem ao gerar a imagem. Mantive a cotacao no historico local.',
+        '--danger'
+      );
     });
 }
 
@@ -629,7 +734,7 @@ document.addEventListener('DOMContentLoaded', function () {
   updateUI();
   setFeedback(
     WEB_APP_URL
-      ? 'Apps Script configurado. Salvamento e historico da planilha ativos.'
+      ? 'Apps Script configurado. O botao gera a arte da cotacao e tenta salvar na planilha.'
       : 'Cole a URL do seu Apps Script em WEB_APP_URL no app.js para ativar a planilha.',
     '--text-700'
   );

@@ -498,6 +498,12 @@ select {
   border: 1px solid rgba(145, 176, 235, 0.18);
 }
 
+.summary-card-export {
+  background:
+    radial-gradient(circle at top right, rgba(111, 214, 255, 0.18), transparent 28%),
+    linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+}
+
 .summary-header {
   background: linear-gradient(180deg, #0f56a8 0%, #10448b 100%);
   color: #fff;
@@ -633,6 +639,10 @@ select {
   color: var(--text-500);
   font-size: 12px;
   border-top: 1px solid #edf2fb;
+}
+
+.summary-card.is-exporting {
+  box-shadow: 0 24px 48px rgba(28, 58, 119, 0.16);
 }
 
 @media (max-width: 1320px) {

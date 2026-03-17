@@ -154,46 +154,48 @@
               Cotacao pronta. Cole a URL do Apps Script no app.js para ativar a planilha.
             </div>
             <button class="primary-action" type="button" id="copySaveBtn">
-              COPIAR E SALVAR
+              COPIAR IMAGEM E SALVAR
             </button>
           </div>
         </section>
 
         <aside class="summary-card">
-          <div class="summary-header">
-            <div class="summary-logo">AD2</div>
-            <div>
-              <div class="summary-company">AD2 Passagens Aereas</div>
-              <div class="summary-airline" id="summaryAirline">Companhia aerea a definir</div>
+          <div class="summary-card-export" id="quoteCard">
+            <div class="summary-header">
+              <div class="summary-logo">AD2</div>
+              <div>
+                <div class="summary-company">AD2 Passagens Aereas</div>
+                <div class="summary-airline" id="summaryAirline">Companhia aerea a definir</div>
+              </div>
             </div>
+
+            <div class="summary-price-block">
+              <span class="summary-caption">TOTAL A VISTA (PIX)</span>
+              <strong id="summaryPix">R$ 0,00</strong>
+              <small>Valores sujeitos a alteracao sem aviso previo</small>
+            </div>
+
+            <section class="summary-section">
+              <h2>PARCELAMENTO NO CARTAO</h2>
+              <div class="installments-table" id="installmentsTable"></div>
+            </section>
+
+            <section class="summary-section">
+              <h2>O QUE ESTA INCLUSO</h2>
+              <ul class="included-list" id="includedList">
+                <li>Taxas inclusas</li>
+                <li>Remarcacao c/ custo</li>
+                <li>Auxilio no check-in</li>
+                <li>01 bagagem de 10kg por passageiro</li>
+                <li>Assistencia Juridica</li>
+                <li>Sem reembolso</li>
+              </ul>
+            </section>
+
+            <footer class="summary-footer">
+              CNPJ 00.000.000/0001-00 | Rua Exemplo, 123 | WhatsApp AD2
+            </footer>
           </div>
-
-          <div class="summary-price-block">
-            <span class="summary-caption">TOTAL A VISTA (PIX)</span>
-            <strong id="summaryPix">R$ 0,00</strong>
-            <small>Valores sujeitos a alteracao sem aviso previo</small>
-          </div>
-
-          <section class="summary-section">
-            <h2>PARCELAMENTO NO CARTAO</h2>
-            <div class="installments-table" id="installmentsTable"></div>
-          </section>
-
-          <section class="summary-section">
-            <h2>O QUE ESTA INCLUSO</h2>
-            <ul class="included-list" id="includedList">
-              <li>Taxas inclusas</li>
-              <li>Remarcacao c/ custo</li>
-              <li>Auxilio no check-in</li>
-              <li>01 bagagem de 10kg por passageiro</li>
-              <li>Assistencia Juridica</li>
-              <li>Sem reembolso</li>
-            </ul>
-          </section>
-
-          <footer class="summary-footer">
-            CNPJ 00.000.000/0001-00 | Rua Exemplo, 123 | WhatsApp AD2
-          </footer>
         </aside>
       </main>
     </div>
@@ -230,6 +232,10 @@
         </div>
       </div>
     </template>
+    <script
+      src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"
+      defer
+    ></script>
     <script src="app.js"></script>
   </body>
 </html>
