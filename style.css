@@ -75,8 +75,8 @@ select {
 }
 
 .brand-logo-image {
-  width: 122px;
-  height: 78px;
+  width: 48px;
+  height: 48px;
   object-fit: contain;
   border-radius: 0;
   background: transparent;
@@ -90,14 +90,14 @@ select {
 
 .brand-kicker {
   font-size: 12px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   opacity: 0.72;
 }
 
 .brand-name {
-  font-size: 22px;
-  line-height: 1.15;
+  font-size: 18px;
+  line-height: 1.2;
   max-width: 150px;
 }
 
@@ -516,10 +516,10 @@ select {
 .summary-header {
   background: linear-gradient(180deg, #0f56a8 0%, #10448b 100%);
   color: #fff;
-  padding: 22px 24px;
+  padding: 18px 24px 16px;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
 }
 
 .summary-logo {
@@ -534,24 +534,26 @@ select {
 }
 
 .summary-logo-image {
-  width: 124px;
-  height: 72px;
+  width: 58px;
+  height: 58px;
   border-radius: 0;
   object-fit: contain;
   background: transparent;
   padding: 0;
+  flex: 0 0 auto;
 }
 
 .summary-company {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
+  line-height: 1.08;
 }
 
 .summary-airline {
-  margin-top: 6px;
-  font-size: 13px;
+  margin-top: 8px;
+  font-size: 12px;
   opacity: 0.82;
 }
 
