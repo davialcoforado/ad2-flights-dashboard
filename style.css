@@ -486,6 +486,13 @@ select {
   grid-template-columns: repeat(2, minmax(0, 220px));
 }
 
+.settings-installments-grid {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 140px));
+  gap: 14px 16px;
+}
+
 .settings-divider {
   height: 1px;
   background: rgba(145, 176, 235, 0.3);
@@ -760,6 +767,7 @@ select {
   }
 
   .settings-grid,
+  .settings-installments-grid,
   .settings-company-row {
     grid-template-columns: 1fr;
   }

@@ -22,7 +22,10 @@ const INSTALLMENT_RATES = {
 };
 
 const DEFAULT_SETTINGS = {
-  taxaMercadoPago: 0,
+  mercadoPagoRates: Object.keys(INSTALLMENT_RATES).reduce(function (accumulator, key) {
+    accumulator[key] = 0;
+    return accumulator;
+  }, {}),
   taxaExtra: 0,
   companies: [
     { name: 'AZUL', milheiro: 15.5 },
@@ -65,8 +68,21 @@ function loadSettings() {
   try {
     const raw = localStorage.getItem(SETTINGS_STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : {};
+    const legacyMercadoPago = parseNumber(parsed.taxaMercadoPago);
+    const mercadoPagoRates = Object.keys(DEFAULT_SETTINGS.mercadoPagoRates).reduce(function (
+      accumulator,
+      key
+    ) {
+      const configuredValue =
+        parsed.mercadoPagoRates && Object.prototype.hasOwnProperty.call(parsed.mercadoPagoRates, key)
+          ? parsed.mercadoPagoRates[key]
+          : legacyMercadoPago;
+      accumulator[key] = parseNumber(configuredValue);
+      return accumulator;
+    },
+    {});
     return {
-      taxaMercadoPago: parseNumber(parsed.taxaMercadoPago || DEFAULT_SETTINGS.taxaMercadoPago),
+      mercadoPagoRates: mercadoPagoRates,
       taxaExtra: parseNumber(parsed.taxaExtra || DEFAULT_SETTINGS.taxaExtra),
       companies:
         Array.isArray(parsed.companies) && parsed.companies.length
@@ -80,7 +96,7 @@ function loadSettings() {
     };
   } catch (error) {
     return {
-      taxaMercadoPago: DEFAULT_SETTINGS.taxaMercadoPago,
+      mercadoPagoRates: Object.assign({}, DEFAULT_SETTINGS.mercadoPagoRates),
       taxaExtra: DEFAULT_SETTINGS.taxaExtra,
       companies: DEFAULT_SETTINGS.companies.slice()
     };
@@ -183,7 +199,12 @@ function renderSettingsCompanies() {
 }
 
 function fillSettingsForm() {
-  document.getElementById('settingsMercadoPago').value = appSettings.taxaMercadoPago;
+  Object.keys(appSettings.mercadoPagoRates).forEach(function (key) {
+    const input = document.getElementById('settingsMercadoPago' + key);
+    if (input) {
+      input.value = appSettings.mercadoPagoRates[key];
+    }
+  });
   document.getElementById('settingsTaxaExtra').value = appSettings.taxaExtra;
   renderSettingsCompanies();
 }
@@ -201,7 +222,16 @@ function readSettingsForm() {
     });
 
   return {
-    taxaMercadoPago: parseNumber(document.getElementById('settingsMercadoPago').value),
+    mercadoPagoRates: Object.keys(DEFAULT_SETTINGS.mercadoPagoRates).reduce(function (
+      accumulator,
+      key
+    ) {
+      accumulator[key] = parseNumber(
+        document.getElementById('settingsMercadoPago' + key).value
+      );
+      return accumulator;
+    },
+    {}),
     taxaExtra: parseNumber(document.getElementById('settingsTaxaExtra').value),
     companies: companies.length ? companies : DEFAULT_SETTINGS.companies.slice()
   };
@@ -293,7 +323,7 @@ function getFormValues() {
     volta: '',
     valorPaganteRef: parseNumber(document.getElementById('valorPaganteRef').value),
     comissao: parseNumber(document.getElementById('comissao').value),
-    taxaMercadoPago: appSettings.taxaMercadoPago,
+    mercadoPagoRates: appSettings.mercadoPagoRates,
     taxaExtra: appSettings.taxaExtra,
     companies: companies
   };
@@ -380,12 +410,16 @@ function computeQuote(values) {
   };
 }
 
-function buildInstallments(totalPix, semJurosLimit) {
-  const mercadoPagoRate = arguments.length > 2 ? Math.max(0, arguments[2]) / 100 : 0;
+function buildInstallments(totalPix, semJurosLimit, mercadoPagoRates) {
   const limit = semJurosLimit === 'pix' ? 0 : parseInt(semJurosLimit, 10);
   const installments = [];
 
   for (let i = 1; i <= 12; i += 1) {
+    const mercadoPagoRate = parseNumber(
+      mercadoPagoRates && Object.prototype.hasOwnProperty.call(mercadoPagoRates, String(i))
+        ? mercadoPagoRates[String(i)]
+        : 0
+    ) / 100;
     const rate = i <= limit ? 0 : INSTALLMENT_RATES[i] || 0;
     const totalWithRate = totalPix * (1 + rate + mercadoPagoRate);
     installments.push({
@@ -726,7 +760,7 @@ function updateUI() {
   const installments = buildInstallments(
     computed.precoPix,
     values.parcelamentoSemJuros,
-    values.taxaMercadoPago
+    values.mercadoPagoRates
   );
   const statusCard = document.querySelector('.status-card');
 
